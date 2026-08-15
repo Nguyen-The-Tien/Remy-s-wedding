@@ -1,20 +1,31 @@
-import { Geist, Geist_Mono, EB_Garamond } from "next/font/google"
+import type { Metadata } from "next"
+import { EB_Garamond, Instrument_Sans } from "next/font/google"
 
 import "./globals.css"
+import { FloatingSocial } from "@/components/floating-social"
+import { SiteFooter } from "@/components/site-footer"
+import { SiteHeader } from "@/components/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { APP_CONFIG } from "@/config/config"
+import { cn } from "@/lib/utils"
 
-const ebGaramond = EB_Garamond({subsets:['latin'],variable:'--font-serif'});
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600"],
+})
 
-const fontSans = Geist({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
+  weight: ["400", "500", "600"],
 })
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+export const metadata: Metadata = {
+  title: `${APP_CONFIG.name} — Ảnh & Video Cưới`,
+  description: APP_CONFIG.description,
+}
 
 export default function RootLayout({
   children,
@@ -23,12 +34,22 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="vi"
       suppressHydrationWarning
-      className={cn("antialiased", fontSans.variable, fontMono.variable, "font-serif", ebGaramond.variable)}
+      className={cn(
+        "antialiased",
+        instrumentSans.variable,
+        ebGaramond.variable,
+        "font-sans"
+      )}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+          <FloatingSocial />
+        </ThemeProvider>
       </body>
     </html>
   )
