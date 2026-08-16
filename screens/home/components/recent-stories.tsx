@@ -32,21 +32,13 @@ export function RecentStories() {
                 Câu chuyện gần đây
               </p>
               <h2 className="mt-2 font-serif text-[clamp(2rem,4.2vw,2.9rem)] text-foreground">
-                Những khoảnh khắc mới nhất
+                Những khoảnh khắc nổi bật nhất nhất
               </h2>
             </div>
 
-            <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="border-b border-foreground pb-1 text-[0.72rem] font-medium tracking-[0.18em] text-foreground uppercase transition-colors hover:border-clay hover:text-clay"
-              >
-                Xem tất cả
-              </a>
-              <div className="flex gap-2">
-                <CarouselPrevious className="static inset-auto! my-0! translate-y-0!" />
-                <CarouselNext className="static inset-auto! my-0! translate-y-0!" />
-              </div>
+            <div className="flex gap-3">
+              <CarouselPrevious className="static inset-auto! my-0! size-11 translate-y-0! border-border bg-transparent text-foreground transition-colors hover:border-clay hover:bg-transparent hover:text-clay disabled:opacity-30" />
+              <CarouselNext className="static inset-auto! my-0! size-11 translate-y-0! border-border bg-transparent text-foreground transition-colors hover:border-clay hover:bg-transparent hover:text-clay disabled:opacity-30" />
             </div>
           </motion.div>
         </div>

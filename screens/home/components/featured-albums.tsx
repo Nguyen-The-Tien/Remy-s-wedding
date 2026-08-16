@@ -15,7 +15,7 @@ import {
 const SECTIONS: { category: AlbumCategory; href: string }[] = [
   { category: "pre_wedding", href: "/pre-wedding" },
   { category: "wedding", href: "/wedding" },
-  { category: "video", href: "#" },
+  { category: "video", href: "/videos" },
 ]
 
 export function FeaturedAlbums() {
@@ -35,7 +35,7 @@ function CategorySection({
   category: AlbumCategory
   href: string
 }) {
-  const albums = albumsByCategory(category, 4)
+  const albums = albumsByCategory(category, category === "wedding" ? 8 : 4)
 
   return (
     <section

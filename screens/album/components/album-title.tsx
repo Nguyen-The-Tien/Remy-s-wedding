@@ -30,7 +30,7 @@ export function AlbumTitle({
   listHref: string
 }) {
   return (
-    <section className="pt-12 pb-14 md:pt-12 md:pb-16">
+    <section className="pt-8 pb-14 md:pt-12 md:pb-16">
       <div className="mx-auto max-w-[1440px] px-6 md:px-10">
         <motion.div variants={container} initial="hidden" animate="show">
           <motion.div variants={item}>

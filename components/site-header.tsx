@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { href: "/pre-wedding", label: "Pre-wedding" },
   { href: "/wedding", label: "Wedding" },
   { href: "/videos", label: "Video cưới" },
+  { href: "/contact", label: "Liên hệ" },
 ]
 
 export function SiteHeader() {

@@ -6,7 +6,7 @@ import { SOCIAL_LINKS } from "@/lib/socials"
 
 export function FloatingSocial() {
   return (
-    <div className="fixed right-4 bottom-8 z-40 flex flex-col gap-3 sm:right-6 sm:bottom-6">
+    <div className="fixed right-6 bottom-8 z-40 flex flex-col gap-3 sm:right-10 sm:bottom-16">
       {SOCIAL_LINKS.map(({ label, href, icon }, index) => (
         <motion.a
           key={label}
@@ -27,7 +27,11 @@ export function FloatingSocial() {
           className="flex size-11 items-center justify-center rounded-full"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={icon} alt="" className="size-11" />
+          <img
+            src={icon}
+            alt=""
+            className={label === "Instagram" ? "size-9" : "size-11"}
+          />
         </motion.a>
       ))}
     </div>

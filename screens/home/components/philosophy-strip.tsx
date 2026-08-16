@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 export function PhilosophyStrip() {
   return (
     <section>
-      <div className="mx-auto max-w-4xl px-6 pt-8 pb-4 text-center md:px-10 md:py-8">
+      <div className="mx-auto max-w-6xl px-6 pt-8 pb-4 text-center md:px-10 md:py-8">
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
