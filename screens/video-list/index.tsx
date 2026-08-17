@@ -6,14 +6,12 @@ import Link from "next/link"
 import { ContactSection } from "@/components/contact-section"
 import { VideoListGrid } from "@/screens/video-list/components/video-list-grid"
 import {
-  albumsByCategory,
-  CATEGORY_LABEL,
-  CATEGORY_TITLE,
-} from "@/lib/mock-albums"
+  mockVideos,
+  VIDEO_CATEGORY_LABEL,
+  VIDEO_CATEGORY_TITLE,
+} from "@/lib/mock-videos"
 
 export function VideoListScreen() {
-  const albums = albumsByCategory("video")
-
   return (
     <main>
       <section className="pt-10 pb-10 md:pt-12 md:pb-14">
@@ -31,11 +29,11 @@ export function VideoListScreen() {
             </Link>
             <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
               <p className="text-sm font-medium tracking-[0.2em] text-clay uppercase">
-                {CATEGORY_LABEL.video}
+                {VIDEO_CATEGORY_LABEL}
               </p>
             </div>
             <h1 className="mt-2 font-serif text-[clamp(2.4rem,6vw,4rem)] text-foreground">
-              {CATEGORY_TITLE.video}
+              {VIDEO_CATEGORY_TITLE}
             </h1>
           </motion.div>
         </div>
@@ -43,7 +41,7 @@ export function VideoListScreen() {
 
       <section className="pb-20 md:pb-28">
         <div className="mx-auto max-w-[1440px] px-6 md:px-10">
-          <VideoListGrid albums={albums} />
+          <VideoListGrid videos={mockVideos} />
         </div>
       </section>
 

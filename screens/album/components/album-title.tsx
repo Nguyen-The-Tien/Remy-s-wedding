@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 
 import type { MockAlbum } from "@/lib/mock-albums"
-import { CATEGORY_LABEL } from "@/lib/mock-albums"
+import { CATEGORY_LABEL, formatMonthYearVi } from "@/lib/mock-albums"
 
 const container = {
   hidden: {},
@@ -58,7 +58,7 @@ export function AlbumTitle({
             </span>
             <span aria-hidden className="h-3 w-px bg-border" />
             <span className="text-[0.72rem] font-medium tracking-[0.18em] text-muted-foreground uppercase">
-              {album.date} · {album.photos.length} ảnh
+              {formatMonthYearVi(album.date)} · {album.photos.length} ảnh
             </span>
           </motion.div>
         </motion.div>

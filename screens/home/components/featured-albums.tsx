@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
+import type { ReactNode } from "react"
 
 import { AlbumFilmRow } from "@/screens/home/components/album-film-row"
 import { VideoGrid } from "@/screens/home/components/video-grid"
@@ -9,45 +10,57 @@ import {
   albumsByCategory,
   CATEGORY_LABEL,
   CATEGORY_TITLE,
-  type AlbumCategory,
 } from "@/lib/mock-albums"
-
-const SECTIONS: { category: AlbumCategory; href: string }[] = [
-  { category: "pre_wedding", href: "/pre-wedding" },
-  { category: "wedding", href: "/wedding" },
-  { category: "video", href: "/videos" },
-]
+import { mockVideos, VIDEO_CATEGORY_LABEL, VIDEO_CATEGORY_TITLE } from "@/lib/mock-videos"
 
 export function FeaturedAlbums() {
   return (
     <>
-      {SECTIONS.map(({ category, href }) => (
-        <CategorySection key={category} category={category} href={href} />
-      ))}
+      <Section
+        id="pre-wedding"
+        label={CATEGORY_LABEL.pre_wedding}
+        title={CATEGORY_TITLE.pre_wedding}
+        href="/pre-wedding"
+      >
+        <AlbumFilmRow albums={albumsByCategory("pre_wedding", 4)} />
+      </Section>
+
+      <Section
+        id="wedding"
+        label={CATEGORY_LABEL.wedding}
+        title={CATEGORY_TITLE.wedding}
+        href="/wedding"
+      >
+        <AlbumFilmRow albums={albumsByCategory("wedding", 8)} />
+      </Section>
+
+      <Section
+        id="video"
+        label={VIDEO_CATEGORY_LABEL}
+        title={VIDEO_CATEGORY_TITLE}
+        href="/videos"
+      >
+        <VideoGrid videos={mockVideos.slice(0, 4)} />
+      </Section>
     </>
   )
 }
 
-function CategorySection({
-  category,
+function Section({
+  id,
+  label,
+  title,
   href,
+  children,
 }: {
-  category: AlbumCategory
+  id: string
+  label: string
+  title: string
   href: string
+  children: ReactNode
 }) {
-  const albums = albumsByCategory(category, category === "wedding" ? 8 : 4)
-
   return (
-    <section
-      id={
-        category === "pre_wedding"
-          ? "pre-wedding"
-          : category === "video"
-            ? "video"
-            : "wedding"
-      }
-      className="scroll-mt-20"
-    >
+    <section id={id} className="scroll-mt-20">
       <div className="mx-auto max-w-[1440px] px-6 py-16 md:px-10 md:pt-20 md:pb-10">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
@@ -57,10 +70,10 @@ function CategorySection({
           className="mb-8 border-b border-border pb-6 md:mb-10"
         >
           <p className="text-sm font-medium tracking-[0.2em] text-clay uppercase">
-            {CATEGORY_LABEL[category]}
+            {label}
           </p>
           <h2 className="mt-2 font-serif text-[clamp(2.1rem,4.4vw,3.1rem)] text-foreground">
-            {CATEGORY_TITLE[category]}
+            {title}
           </h2>
         </motion.div>
 
@@ -70,11 +83,7 @@ function CategorySection({
           viewport={{ once: true, margin: "-10%" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
         >
-          {category === "video" ? (
-            <VideoGrid albums={albums} />
-          ) : (
-            <AlbumFilmRow albums={albums} />
-          )}
+          {children}
         </motion.div>
 
         <div className="mt-9 flex justify-center md:mt-11">

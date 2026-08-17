@@ -2,14 +2,19 @@ import Image from "next/image"
 import { Play } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import type { MockAlbum } from "@/lib/mock-albums"
+
+export type AlbumThumbItem = {
+  title: string
+  location: string
+  coverImage: string
+}
 
 export function AlbumThumb({
   album,
   isVideo,
   imageClassName,
 }: {
-  album: MockAlbum
+  album: AlbumThumbItem
   isVideo?: boolean
   imageClassName?: string
 }) {
@@ -23,7 +28,7 @@ export function AlbumThumb({
       >
         <Image
           src={album.coverImage}
-          alt={`Album ${album.title} — ${album.location}`}
+          alt={`${album.title} — ${album.location}`}
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 80vw"
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"

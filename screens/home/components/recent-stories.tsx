@@ -57,11 +57,7 @@ export function RecentStories() {
                 className="basis-[85%] sm:basis-[34%] lg:basis-[22%]"
               >
                 <AlbumLink album={album} className="group block">
-                  <AlbumThumb
-                    album={album}
-                    isVideo={album.category === "video"}
-                    imageClassName="aspect-[3/4]"
-                  />
+                  <AlbumThumb album={album} imageClassName="aspect-[3/4]" />
                 </AlbumLink>
               </CarouselItem>
             ))}

@@ -10,16 +10,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { getYouTubeId } from "@/lib/utils"
-import type { MockAlbum } from "@/lib/mock-albums"
+
+export type VideoDialogItem = {
+  title: string
+  location: string
+  youtubeUrl: string
+}
 
 export function VideoDialogModal({
-  album,
+  video,
   onClose,
 }: {
-  album: MockAlbum | null
+  video: VideoDialogItem | null
   onClose: () => void
 }) {
-  const isOpen = album !== null && !!album.highlightVideoUrl
+  const isOpen = video !== null
 
   return (
     <Dialog
@@ -42,22 +47,22 @@ export function VideoDialogModal({
         className="max-w-[calc(100%-2rem)] gap-0 border-0 bg-transparent p-0 ring-0 sm:max-w-4xl"
       >
         <DialogTitle className="sr-only">
-          {album ? `${album.title} — ${album.location}` : "Video"}
+          {video ? `${video.title} — ${video.location}` : "Video"}
         </DialogTitle>
 
-        {album?.highlightVideoUrl && (
+        {video && (
           <>
             <div className="relative aspect-video w-full bg-neutral-900">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(album.highlightVideoUrl)}?autoplay=1`}
-                title={`Video — ${album.title}`}
+                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(video.youtubeUrl)}?autoplay=1`}
+                title={`Video — ${video.title}`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="absolute inset-0 h-full w-full border-0"
               />
             </div>
             <p className="mt-4 text-center text-sm tracking-wide text-white/60">
-              {album.title} · {album.location}
+              {video.title} · {video.location}
             </p>
           </>
         )}

@@ -2,9 +2,7 @@ import type { Metadata } from "next"
 import { EB_Garamond, Instrument_Sans } from "next/font/google"
 
 import "./globals.css"
-import { FloatingSocial } from "@/components/floating-social"
-import { SiteFooter } from "@/components/site-footer"
-import { SiteHeader } from "@/components/site-header"
+import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { APP_CONFIG } from "@/config/config"
 import { cn } from "@/lib/utils"
@@ -45,10 +43,8 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
-          <SiteHeader />
           {children}
-          <SiteFooter />
-          <FloatingSocial />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

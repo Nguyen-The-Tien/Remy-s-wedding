@@ -8,7 +8,7 @@ import { RelatedAlbums } from "@/screens/album/components/related-albums"
 
 export function AlbumScreen({ album }: { album: NonNullable<ReturnType<typeof getAlbumBySlug>> }) {
   const related = relatedAlbums(album)
-  const listHref = album.category === "video" ? "/" : `/${album.category.replace("_", "-")}`
+  const listHref = `/${album.category.replace("_", "-")}`
 
   return (
     <main>

@@ -4,27 +4,35 @@ import { useState } from "react"
 
 import { AlbumThumb } from "@/components/album-thumb"
 import { VideoDialogModal } from "@/components/video-dialog-modal"
-import type { MockAlbum } from "@/lib/mock-albums"
+import { videoThumbnail, type VideoEntry } from "@/lib/mock-videos"
 
-export function VideoGrid({ albums }: { albums: MockAlbum[] }) {
-  const [active, setActive] = useState<MockAlbum | null>(null)
+export function VideoGrid({ videos }: { videos: VideoEntry[] }) {
+  const [active, setActive] = useState<VideoEntry | null>(null)
 
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 md:gap-6">
-        {albums.map((album) => (
+        {videos.map((video) => (
           <button
-            key={album.id}
+            key={video.id}
             type="button"
-            onClick={() => setActive(album)}
+            onClick={() => setActive(video)}
             className="group block w-full text-left"
           >
-            <AlbumThumb album={album} isVideo imageClassName="aspect-[16/10]" />
+            <AlbumThumb
+              album={{
+                title: video.title,
+                location: video.location,
+                coverImage: videoThumbnail(video.youtubeUrl),
+              }}
+              isVideo
+              imageClassName="aspect-[16/10]"
+            />
           </button>
         ))}
       </div>
 
-      <VideoDialogModal album={active} onClose={() => setActive(null)} />
+      <VideoDialogModal video={active} onClose={() => setActive(null)} />
     </>
   )
 }
