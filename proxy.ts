@@ -8,6 +8,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: { httpOnly: true },
       cookies: {
         getAll() {
           return request.cookies.getAll()
@@ -30,10 +31,20 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+  const isPublicApiRoute = pathname === "/api/auth/login"
+  const isApiRoute = pathname.startsWith("/api") && !isPublicApiRoute
   const isAdminRoute = pathname.startsWith("/admin")
   const isLoginRoute = pathname === "/admin/login"
 
-  if (isAdminRoute && !isLoginRoute && !user) {
+  if (!user && isApiRoute) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  if (user && isLoginRoute) {
+    return NextResponse.redirect(new URL("/admin", request.url))
+  }
+
+  if (!user && isAdminRoute && !isLoginRoute) {
     return NextResponse.redirect(new URL("/admin/login", request.url))
   }
 
@@ -41,5 +52,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/:path*"],
 }
