@@ -1,9 +1,14 @@
 import { AdminDataProvider } from "@/lib/admin/mock-store"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 export default function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <AdminDataProvider>{children}</AdminDataProvider>
+  return (
+    <QueryProvider>
+      <AdminDataProvider>{children}</AdminDataProvider>
+    </QueryProvider>
+  )
 }
