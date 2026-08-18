@@ -1,41 +1,31 @@
-const SESSION_KEY = "remys-admin-session"
-const PASSWORD_KEY = "remys-admin-password"
-
-export const DEMO_CREDENTIALS = {
-  email: "admin@remys.vn",
-  password: "remys2026",
+export async function signIn(
+  email: string,
+  password: string
+): Promise<{ error: string | null }> {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  })
+  if (res.ok) return { error: null }
+  const body = await res.json().catch(() => ({}))
+  return { error: body.error ?? "Đăng nhập thất bại" }
 }
 
-function getStoredPassword(): string {
-  if (typeof window === "undefined") return DEMO_CREDENTIALS.password
-  return localStorage.getItem(PASSWORD_KEY) ?? DEMO_CREDENTIALS.password
+export async function signOut(): Promise<void> {
+  await fetch("/api/auth/logout", { method: "POST" })
 }
 
-export function checkCredentials(email: string, password: string): boolean {
-  return (
-    email.trim().toLowerCase() === DEMO_CREDENTIALS.email &&
-    password === getStoredPassword()
-  )
-}
-
-export function changePassword(
+export async function changePassword(
   currentPassword: string,
   newPassword: string
-): boolean {
-  if (currentPassword !== getStoredPassword()) return false
-  localStorage.setItem(PASSWORD_KEY, newPassword)
-  return true
-}
-
-export function setSession() {
-  localStorage.setItem(SESSION_KEY, "1")
-}
-
-export function clearSession() {
-  localStorage.removeItem(SESSION_KEY)
-}
-
-export function hasSession(): boolean {
-  if (typeof window === "undefined") return false
-  return localStorage.getItem(SESSION_KEY) === "1"
+): Promise<{ error: string | null }> {
+  const res = await fetch("/api/auth/change-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+  if (res.ok) return { error: null }
+  const body = await res.json().catch(() => ({}))
+  return { error: body.error ?? "Đổi mật khẩu thất bại" }
 }
