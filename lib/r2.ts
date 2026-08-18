@@ -35,6 +35,10 @@ export function buildHeroKey(fileName: string): string {
   return `site-assets/hero${fileExtension(fileName)}`
 }
 
+export function buildHeroImageKey(fileName: string): string {
+  return `site-assets/hero-images/${crypto.randomUUID()}${fileExtension(fileName)}`
+}
+
 export async function presignUpload(
   key: string,
   contentType: string
