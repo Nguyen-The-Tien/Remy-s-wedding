@@ -15,11 +15,11 @@ export function useAlbums() {
   })
 }
 
-export function useAlbum(id: string) {
+export function useAlbum(id: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.album(id),
     queryFn: async () => (await http.get<AlbumWithPhotos>(`/albums/${id}`)).data,
-    enabled: Boolean(id),
+    enabled: Boolean(id) && (options?.enabled ?? true),
   })
 }
 
@@ -30,10 +30,11 @@ export function useCreateAlbum() {
       category: AlbumCategory
       title: string
       slug: string
+      location?: string | null
       eventDate?: string | null
     }) => (await http.post<AlbumRow>("/albums", input)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.albums })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.albums })
     },
   })
 }
@@ -58,8 +59,10 @@ export function useUpdateAlbum(id: string) {
       >
     ) => (await http.patch<AlbumRow>(`/albums/${id}`, patch)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.albums })
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(id) })
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.albums }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.album(id) }),
+      ])
     },
   })
 }
@@ -71,7 +74,7 @@ export function useDeleteAlbum() {
       await http.delete(`/albums/${id}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.albums })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.albums })
     },
   })
 }
@@ -82,7 +85,7 @@ export function useAddPhoto(albumId: string) {
     mutationFn: async (input: { imageKey: string; sortOrder: number }) =>
       (await http.post<AlbumPhotoRow>(`/albums/${albumId}/photos`, input)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
     },
   })
 }
@@ -94,7 +97,7 @@ export function useDeletePhoto(albumId: string) {
       await http.delete(`/albums/${albumId}/photos/${photoId}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
     },
   })
 }
@@ -110,7 +113,7 @@ export function useUpdatePhotoSortOrder(albumId: string) {
         )
       ).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
     },
   })
 }

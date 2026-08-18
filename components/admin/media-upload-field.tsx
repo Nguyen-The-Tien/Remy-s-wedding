@@ -10,13 +10,17 @@ export function MediaUploadField({
   id,
   label,
   value,
-  onChange,
+  onFileSelected,
+  onClear,
+  uploading,
   kind,
 }: {
   id: string
   label: string
   value: string
-  onChange: (url: string) => void
+  onFileSelected: (file: File) => void
+  onClear: () => void
+  uploading?: boolean
   kind: "image" | "video"
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -24,7 +28,7 @@ export function MediaUploadField({
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    onChange(URL.createObjectURL(file))
+    onFileSelected(file)
     e.target.value = ""
   }
 
@@ -51,17 +55,13 @@ export function MediaUploadField({
             type="button"
             variant="outline"
             size="sm"
+            disabled={uploading}
             onClick={() => inputRef.current?.click()}
           >
-            {value ? "Đổi file" : "Tải lên"}
+            {uploading ? "Đang tải..." : value ? "Đổi file" : "Tải lên"}
           </Button>
-          {value && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => onChange("")}
-            >
+          {value && !uploading && (
+            <Button type="button" variant="ghost" size="icon-sm" onClick={onClear}>
               <X />
               <span className="sr-only">Xoá</span>
             </Button>

@@ -577,7 +577,7 @@ export function useCreateAlbum() {
       eventDate?: string | null
     }) => (await http.post<AlbumRow>("/albums", input)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.albums })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.albums })
     },
   })
 }
@@ -602,8 +602,10 @@ export function useUpdateAlbum(id: string) {
       >
     ) => (await http.patch<AlbumRow>(`/albums/${id}`, patch)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.albums })
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(id) })
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.albums }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.album(id) }),
+      ])
     },
   })
 }
@@ -615,7 +617,7 @@ export function useDeleteAlbum() {
       await http.delete(`/albums/${id}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.albums })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.albums })
     },
   })
 }
@@ -626,7 +628,7 @@ export function useAddPhoto(albumId: string) {
     mutationFn: async (input: { imageKey: string; sortOrder: number }) =>
       (await http.post<AlbumPhotoRow>(`/albums/${albumId}/photos`, input)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
     },
   })
 }
@@ -638,7 +640,7 @@ export function useDeletePhoto(albumId: string) {
       await http.delete(`/albums/${albumId}/photos/${photoId}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
     },
   })
 }
@@ -654,7 +656,7 @@ export function useUpdatePhotoSortOrder(albumId: string) {
         )
       ).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.album(albumId) })
     },
   })
 }
@@ -955,11 +957,13 @@ export function NewAlbumDialog() {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState<AlbumCategory>("wedding")
+  const [location, setLocation] = useState("")
   const [eventDate, setEventDate] = useState<Date | undefined>()
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !eventDate) return
+    if (createAlbum.isPending) return
+    if (!title.trim() || !location.trim() || !eventDate) return
 
     const isoDate = toIsoDate(eventDate)
     createAlbum.mutate(
@@ -967,6 +971,7 @@ export function NewAlbumDialog() {
         title: title.trim(),
         category,
         slug: composeSlug(title, isoDate),
+        location: location.trim(),
         eventDate: isoDate,
       },
       {
@@ -974,6 +979,7 @@ export function NewAlbumDialog() {
           toast.success("Đã tạo album nháp")
           setOpen(false)
           setTitle("")
+          setLocation("")
           setEventDate(undefined)
           router.push(`/admin/albums/${album.id}`)
         },
@@ -1031,6 +1037,17 @@ export function NewAlbumDialog() {
             </div>
 
             <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-album-location">Địa điểm</Label>
+              <Input
+                id="new-album-location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Hà Nội"
+                required
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="new-album-date">Ngày cưới</Label>
               <Popover>
                 <PopoverTrigger
@@ -1061,7 +1078,9 @@ export function NewAlbumDialog() {
           <DialogFooter>
             <Button
               type="submit"
-              disabled={!title.trim() || !eventDate || createAlbum.isPending}
+              disabled={
+                !title.trim() || !location.trim() || !eventDate || createAlbum.isPending
+              }
             >
               Tạo album
             </Button>
@@ -1404,11 +1423,6 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
         </div>
 
         <div className="flex items-center gap-2">
-          {isDirty && (
-            <Button onClick={handleSave} disabled={updateAlbum.isPending}>
-              Lưu thay đổi
-            </Button>
-          )}
           <ConfirmDialog
             trigger={
               <Button variant="destructive" size="sm">
@@ -1580,6 +1594,14 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 <p className="text-xs text-destructive">{errors.coverImage}</p>
               )}
             </div>
+
+            {isDirty && (
+              <div className="flex justify-end border-t border-border pt-4">
+                <Button onClick={handleSave} disabled={updateAlbum.isPending}>
+                  Lưu thay đổi
+                </Button>
+              </div>
+            )}
           </div>
         </SectionCard>
 
@@ -1649,19 +1671,21 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
           <PhotoManager
             photos={displayPhotos}
             onAdd={(files) => {
-              files.forEach((file) => {
-                uploadFile.mutate(
-                  { file, kind: "album-photo", albumSlug: album.slug },
-                  {
-                    onSuccess: ({ key }) => {
-                      addPhoto.mutate(
-                        { imageKey: key, sortOrder: album.photos.length },
-                        { onError: () => toast.error("Không thể lưu ảnh") }
-                      )
-                    },
-                    onError: () => toast.error("Không thể tải ảnh lên"),
-                  }
-                )
+              const baseSortOrder = album.photos.length
+              files.forEach(async (file, index) => {
+                try {
+                  const { key } = await uploadFile.mutateAsync({
+                    file,
+                    kind: "album-photo",
+                    albumSlug: album.slug,
+                  })
+                  await addPhoto.mutateAsync({
+                    imageKey: key,
+                    sortOrder: baseSortOrder + index,
+                  })
+                } catch {
+                  toast.error("Không thể tải ảnh lên")
+                }
               })
             }}
             onRemove={(photoId) => {
@@ -1669,19 +1693,27 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 onError: () => toast.error("Không thể xoá ảnh"),
               })
             }}
-            onMove={(photoId, direction) => {
+            onMove={async (photoId, direction) => {
               const index = album.photos.findIndex((p) => p.id === photoId)
               if (index === -1) return
               const swapWith = direction === "up" ? index - 1 : index + 1
               if (swapWith < 0 || swapWith >= album.photos.length) return
-              updatePhotoSortOrder.mutate({
-                photoId: album.photos[index].id,
-                sortOrder: album.photos[swapWith].sort_order,
-              })
-              updatePhotoSortOrder.mutate({
-                photoId: album.photos[swapWith].id,
-                sortOrder: album.photos[index].sort_order,
-              })
+
+              setIsReordering(true)
+              try {
+                await updatePhotoSortOrder.mutateAsync({
+                  photoId: album.photos[index].id,
+                  sortOrder: album.photos[swapWith].sort_order,
+                })
+                await updatePhotoSortOrder.mutateAsync({
+                  photoId: album.photos[swapWith].id,
+                  sortOrder: album.photos[index].sort_order,
+                })
+              } catch {
+                toast.error("Không thể sắp xếp ảnh")
+              } finally {
+                setIsReordering(false)
+              }
             }}
           />
         </div>
@@ -1756,7 +1788,7 @@ export function useCreateVideo() {
       youtubeUrl: string
     }) => (await http.post<VideoRow>("/videos", input)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.videos })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.videos })
     },
   })
 }
@@ -1778,7 +1810,7 @@ export function useUpdateVideo() {
       }>
     }) => (await http.patch<VideoRow>(`/videos/${id}`, patch)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.videos })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.videos })
     },
   })
 }
@@ -1790,7 +1822,7 @@ export function useDeleteVideo() {
       await http.delete(`/videos/${id}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.videos })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.videos })
     },
   })
 }
@@ -1804,6 +1836,7 @@ export function useDeleteVideo() {
 import { Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { FullPageLoading } from "@/components/admin/full-page-loading"
 import { useVideos } from "@/lib/queries/videos"
 import { VideoFormDialog } from "@/screens/admin/videos-list/components/video-form-dialog"
 import { VideoTable } from "@/screens/admin/videos-list/components/video-table"
@@ -1828,11 +1861,7 @@ export function VideosListScreen() {
         />
       </div>
 
-      {isLoading ? (
-        <p className="py-16 text-center text-sm text-muted-foreground">Đang tải...</p>
-      ) : (
-        <VideoTable videos={videos ?? []} />
-      )}
+      {isLoading ? <FullPageLoading /> : <VideoTable videos={videos ?? []} />}
     </div>
   )
 }
@@ -1972,6 +2001,7 @@ import { useState, type FormEvent, type ReactElement } from "react"
 import { CalendarIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -2041,6 +2071,7 @@ export function VideoFormDialog({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (createVideo.isPending || updateVideo.isPending) return
     const result = videoSchema.safeParse(form)
     if (!result.success) {
       setErrors(fieldErrors(result.error.issues))
@@ -2091,6 +2122,7 @@ export function VideoFormDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={trigger} />
       <DialogContent>
+        <LoadingOverlay active={isPending} />
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEdit ? "Sửa video" : "Thêm video"}</DialogTitle>
@@ -2252,7 +2284,7 @@ export function useUpdateSettings() {
       >
     ) => (await http.patch<SiteSettingsRow>("/settings", patch)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.settings })
     },
   })
 }
@@ -2282,7 +2314,7 @@ export function useAddHeroImage() {
     mutationFn: async (input: { imageKey: string; sortOrder: number }) =>
       (await http.post<HeroImageRow>("/hero-images", input)).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heroImages })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.heroImages })
     },
   })
 }
@@ -2294,7 +2326,7 @@ export function useDeleteHeroImage() {
       await http.delete(`/hero-images/${id}`)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heroImages })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.heroImages })
     },
   })
 }
@@ -2309,7 +2341,7 @@ export function useUpdateHeroImageSortOrder() {
         })
       ).data,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.heroImages })
+      return queryClient.invalidateQueries({ queryKey: queryKeys.heroImages })
     },
   })
 }
@@ -2332,6 +2364,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { AddressMapField } from "@/components/admin/address-map-field"
+import { FullPageLoading } from "@/components/admin/full-page-loading"
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { PhotoManager } from "@/components/admin/photo-manager"
 import { SectionCard } from "@/components/admin/section-card"
 import {
@@ -2381,6 +2415,7 @@ export function SettingsScreen() {
 
   useEffect(() => {
     if (!settings) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setContactForm({
       email: settings.email ?? "",
       address: settings.address ?? "",
@@ -2395,12 +2430,12 @@ export function SettingsScreen() {
   }, [settings])
 
   if (isLoading || !contactForm || !heroForm) {
-    return <p className="py-20 text-center text-sm text-muted-foreground">Đang tải...</p>
+    return <FullPageLoading />
   }
 
   function handleSaveContact(e: FormEvent) {
     e.preventDefault()
-    if (!contactForm) return
+    if (!contactForm || updateSettings.isPending) return
     const result = contactSettingsSchema.safeParse(contactForm)
     if (!result.success) {
       setContactErrors(fieldErrors(result.error.issues))
@@ -2424,7 +2459,7 @@ export function SettingsScreen() {
 
   function handleSaveHero(e: FormEvent) {
     e.preventDefault()
-    if (!heroForm) return
+    if (!heroForm || updateSettings.isPending) return
     const result = heroSettingsSchema.safeParse(heroForm)
     if (!result.success) {
       setHeroErrors(fieldErrors(result.error.issues))
@@ -2450,6 +2485,7 @@ export function SettingsScreen() {
 
   return (
     <div className="flex flex-col gap-6">
+      <LoadingOverlay active={updateSettings.isPending || uploadFile.isPending} />
       <div>
         <h1 className="font-serif text-2xl text-foreground">Cài đặt</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -2612,19 +2648,20 @@ export function SettingsScreen() {
                 <PhotoManager
                   photos={displayHeroImages}
                   onAdd={(files) => {
-                    files.forEach((file) => {
-                      uploadFile.mutate(
-                        { file, kind: "hero-image" },
-                        {
-                          onSuccess: ({ key }) => {
-                            addHeroImage.mutate(
-                              { imageKey: key, sortOrder: (heroImages ?? []).length },
-                              { onError: () => toast.error("Không thể lưu ảnh") }
-                            )
-                          },
-                          onError: () => toast.error("Không thể tải ảnh lên"),
-                        }
-                      )
+                    const baseSortOrder = (heroImages ?? []).length
+                    files.forEach(async (file, index) => {
+                      try {
+                        const { key } = await uploadFile.mutateAsync({
+                          file,
+                          kind: "hero-image",
+                        })
+                        await addHeroImage.mutateAsync({
+                          imageKey: key,
+                          sortOrder: baseSortOrder + index,
+                        })
+                      } catch {
+                        toast.error("Không thể tải ảnh lên")
+                      }
                     })
                   }}
                   onRemove={(id) => {
@@ -2632,20 +2669,25 @@ export function SettingsScreen() {
                       onError: () => toast.error("Không thể xoá ảnh"),
                     })
                   }}
-                  onMove={(id, direction) => {
+                  onMove={async (id, direction) => {
                     const images = heroImages ?? []
                     const index = images.findIndex((img) => img.id === id)
                     if (index === -1) return
                     const swapWith = direction === "up" ? index - 1 : index + 1
                     if (swapWith < 0 || swapWith >= images.length) return
-                    updateHeroImageSortOrder.mutate({
-                      id: images[index].id,
-                      sortOrder: images[swapWith].sort_order,
-                    })
-                    updateHeroImageSortOrder.mutate({
-                      id: images[swapWith].id,
-                      sortOrder: images[index].sort_order,
-                    })
+
+                    try {
+                      await updateHeroImageSortOrder.mutateAsync({
+                        id: images[index].id,
+                        sortOrder: images[swapWith].sort_order,
+                      })
+                      await updateHeroImageSortOrder.mutateAsync({
+                        id: images[swapWith].id,
+                        sortOrder: images[index].sort_order,
+                      })
+                    } catch {
+                      toast.error("Không thể sắp xếp ảnh")
+                    }
                   }}
                 />
               )}
@@ -2703,6 +2745,7 @@ import { Film, Images, Sparkles } from "lucide-react"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
+import { FullPageLoading } from "@/components/admin/full-page-loading"
 import { CATEGORY_LABEL } from "@/lib/mock-albums"
 import { useAlbums } from "@/lib/queries/albums"
 import { useVideos } from "@/lib/queries/videos"
@@ -2717,7 +2760,7 @@ export function DashboardScreen() {
   const { data: videos, isLoading: videosLoading } = useVideos()
 
   if (albumsLoading || videosLoading || !albums || !videos) {
-    return <p className="py-20 text-center text-sm text-muted-foreground">Đang tải...</p>
+    return <FullPageLoading />
   }
 
   const albumStats = (["pre_wedding", "wedding"] as const).map((category) => {

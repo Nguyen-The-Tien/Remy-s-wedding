@@ -3,8 +3,9 @@
 import { useState } from "react"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FullPageLoading } from "@/components/admin/full-page-loading"
 import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/mock-albums"
-import { useAdminData } from "@/lib/admin/mock-store"
+import { useAlbums } from "@/lib/queries/albums"
 import { AlbumTable } from "@/screens/admin/albums-list/components/album-table"
 import { NewAlbumDialog } from "@/screens/admin/albums-list/components/new-album-dialog"
 
@@ -15,11 +16,11 @@ const FILTERS: { value: AlbumCategory | "all"; label: string }[] = [
 ]
 
 export function AlbumsListScreen() {
-  const { albums } = useAdminData()
+  const { data: albums, isLoading } = useAlbums()
   const [filter, setFilter] = useState<AlbumCategory | "all">("all")
 
   const filtered =
-    filter === "all" ? albums : albums.filter((a) => a.category === filter)
+    !albums ? [] : filter === "all" ? albums : albums.filter((a) => a.category === filter)
 
   return (
     <div className="flex flex-col gap-6">
@@ -27,7 +28,7 @@ export function AlbumsListScreen() {
         <div>
           <h1 className="font-serif text-2xl text-foreground">Albums</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {albums.length} album
+            {albums?.length ?? 0} album
           </p>
         </div>
         <NewAlbumDialog />
@@ -46,7 +47,7 @@ export function AlbumsListScreen() {
         </TabsList>
       </Tabs>
 
-      <AlbumTable albums={filtered} />
+      {isLoading ? <FullPageLoading /> : <AlbumTable albums={filtered} />}
     </div>
   )
 }

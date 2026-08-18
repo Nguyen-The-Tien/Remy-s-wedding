@@ -5,6 +5,7 @@ import { CalendarIcon, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -27,34 +28,45 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/mock-albums"
-import { useAdminData } from "@/lib/admin/mock-store"
+import { useCreateAlbum } from "@/lib/queries/albums"
 import { composeSlug, toIsoDate } from "@/lib/utils"
 
 export function NewAlbumDialog() {
   const router = useRouter()
-  const { createAlbum } = useAdminData()
+  const createAlbum = useCreateAlbum()
 
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState<AlbumCategory>("wedding")
+  const [location, setLocation] = useState("")
   const [eventDate, setEventDate] = useState<Date | undefined>()
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !eventDate) return
+    if (createAlbum.isPending) return
+    if (!title.trim() || !location.trim() || !eventDate) return
 
     const isoDate = toIsoDate(eventDate)
-    const album = createAlbum({
-      title: title.trim(),
-      category,
-      slug: composeSlug(title, isoDate),
-      eventDate: isoDate,
-    })
-    toast.success("Đã tạo album nháp")
-    setOpen(false)
-    setTitle("")
-    setEventDate(undefined)
-    router.push(`/admin/albums/${album.id}`)
+    createAlbum.mutate(
+      {
+        title: title.trim(),
+        category,
+        slug: composeSlug(title, isoDate),
+        location: location.trim(),
+        eventDate: isoDate,
+      },
+      {
+        onSuccess: (album) => {
+          toast.success("Đã tạo album nháp")
+          setOpen(false)
+          setTitle("")
+          setLocation("")
+          setEventDate(undefined)
+          router.push(`/admin/albums/${album.id}`)
+        },
+        onError: () => toast.error("Không thể tạo album"),
+      }
+    )
   }
 
   return (
@@ -64,6 +76,7 @@ export function NewAlbumDialog() {
         Album mới
       </DialogTrigger>
       <DialogContent>
+        <LoadingOverlay active={createAlbum.isPending} />
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Tạo album mới</DialogTitle>
@@ -96,15 +109,24 @@ export function NewAlbumDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(CATEGORY_LABEL) as AlbumCategory[]).map(
-                    (key) => (
-                      <SelectItem key={key} value={key}>
-                        {CATEGORY_LABEL[key]}
-                      </SelectItem>
-                    )
-                  )}
+                  {(Object.keys(CATEGORY_LABEL) as AlbumCategory[]).map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {CATEGORY_LABEL[key]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="new-album-location">Địa điểm</Label>
+              <Input
+                id="new-album-location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Hà Nội"
+                required
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -136,7 +158,12 @@ export function NewAlbumDialog() {
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={!title.trim() || !eventDate}>
+            <Button
+              type="submit"
+              disabled={
+                !title.trim() || !location.trim() || !eventDate || createAlbum.isPending
+              }
+            >
               Tạo album
             </Button>
           </DialogFooter>

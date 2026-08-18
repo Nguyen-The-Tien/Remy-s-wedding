@@ -96,6 +96,7 @@ export async function createAlbum(input: {
   category: AlbumCategory
   title: string
   slug: string
+  location?: string | null
   eventDate?: string | null
 }): Promise<AlbumRow> {
   const supabase = createAdminClient()
@@ -105,6 +106,7 @@ export async function createAlbum(input: {
       category: input.category,
       title: input.title,
       slug: input.slug,
+      location: input.location ?? null,
       event_date: input.eventDate ?? null,
     })
     .select("*")
@@ -131,6 +133,18 @@ export async function updateAlbum(
   >
 ): Promise<AlbumRow> {
   const supabase = createAdminClient()
+
+  let previousCoverImageKey: string | null = null
+  if ("cover_image_key" in patch) {
+    const { data: existing, error: fetchError } = await supabase
+      .from("albums")
+      .select("cover_image_key")
+      .eq("id", id)
+      .maybeSingle()
+    if (fetchError) throw fetchError
+    previousCoverImageKey = existing?.cover_image_key ?? null
+  }
+
   const { data, error } = await supabase
     .from("albums")
     .update({ ...patch, updated_at: new Date().toISOString() })
@@ -138,6 +152,13 @@ export async function updateAlbum(
     .select("*")
     .single()
   if (error) throw error
+
+  if (previousCoverImageKey && previousCoverImageKey !== patch.cover_image_key) {
+    await deleteObject(previousCoverImageKey).catch((err) =>
+      console.error("R2 cleanup failed for", previousCoverImageKey, err)
+    )
+  }
+
   return data
 }
 

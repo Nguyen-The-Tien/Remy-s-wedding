@@ -68,9 +68,6 @@ export const albumSchema = z.object({
   coverImage: z.string().trim().min(1, "Vui lòng chọn ảnh bìa"),
   isFeatured: z.boolean(),
   isPublished: z.boolean(),
-  photos: z
-    .array(z.object({ id: z.string(), url: z.string() }))
-    .min(1, "Cần thêm ít nhất 1 ảnh"),
 })
 
 export type AlbumFormErrors = Partial<

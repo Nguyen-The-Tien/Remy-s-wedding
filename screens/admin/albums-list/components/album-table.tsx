@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { CATEGORY_LABEL } from "@/lib/mock-albums"
 import { useDeleteAlbum, useUpdateAlbum } from "@/lib/queries/albums"
 import { publicImageUrl } from "@/lib/r2-url"
@@ -28,6 +29,7 @@ function AlbumRowActions({ album }: { album: AlbumRow }) {
 
   return (
     <>
+      <LoadingOverlay active={updateAlbum.isPending || deleteAlbum.isPending} />
       <TableCell>
         <Switch
           checked={album.is_published}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   ArrowLeft,
   CalendarIcon,
@@ -28,85 +28,168 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
+import { FullPageLoading } from "@/components/admin/full-page-loading"
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { MediaUploadField } from "@/components/admin/media-upload-field"
 import { PhotoManager } from "@/components/admin/photo-manager"
 import { SectionCard } from "@/components/admin/section-card"
 import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/mock-albums"
-import { useAdminData } from "@/lib/admin/mock-store"
+import {
+  useAddPhoto,
+  useAlbum,
+  useDeleteAlbum,
+  useDeletePhoto,
+  useUpdateAlbum,
+  useUpdatePhotoSortOrder,
+} from "@/lib/queries/albums"
+import { useUploadFile } from "@/lib/queries/uploads"
 import { albumSchema, fieldErrors, type AlbumFormErrors } from "@/lib/admin/schemas"
-import type { AdminAlbum, AlbumFormValues } from "@/lib/admin/types"
+import { publicImageUrl } from "@/lib/r2-url"
 import { composeSlug, parseIsoDate, toIsoDate } from "@/lib/utils"
 
-function toFormValues(album: AdminAlbum): AlbumFormValues {
-  return {
-    title: album.title,
-    slug: composeSlug(album.title, album.eventDate),
-    category: album.category,
-    location: album.location,
-    eventDate: album.eventDate,
-    highlightVideoUrl: album.highlightVideoUrl,
-    coverImage: album.coverImage,
-    isFeatured: album.isFeatured,
-    isPublished: album.isPublished,
-    photos: album.photos,
-  }
+type ScalarForm = {
+  title: string
+  slug: string
+  category: AlbumCategory
+  location: string
+  eventDate: string
+  highlightVideoUrl: string
+  coverImageKey: string
 }
 
 export function AlbumDetailScreen({ albumId }: { albumId: string }) {
   const router = useRouter()
-  const { getAlbum, updateAlbum, deleteAlbum } = useAdminData()
+  const [isDeleted, setIsDeleted] = useState(false)
+  const { data: album, isLoading } = useAlbum(albumId, { enabled: !isDeleted })
+  const updateAlbum = useUpdateAlbum(albumId)
+  const deleteAlbum = useDeleteAlbum()
+  const addPhoto = useAddPhoto(albumId)
+  const deletePhoto = useDeletePhoto(albumId)
+  const updatePhotoSortOrder = useUpdatePhotoSortOrder(albumId)
+  const uploadFile = useUploadFile()
+  const uploadCoverImage = useUploadFile()
 
-  const album = getAlbum(albumId)
-
-  const [form, setForm] = useState<AlbumFormValues | null>(
-    album ? toFormValues(album) : null
-  )
-  // Snapshot taken at load/last-save time — the dirty check compares against
-  // this, not the raw store record, so the auto-composed slug on first load
-  // doesn't itself count as an unsaved change.
-  const [savedForm, setSavedForm] = useState<AlbumFormValues | null>(
-    album ? toFormValues(album) : null
-  )
+  const [form, setForm] = useState<ScalarForm | null>(null)
+  const [savedForm, setSavedForm] = useState<ScalarForm | null>(null)
   const [slugTouched, setSlugTouched] = useState(false)
   const [errors, setErrors] = useState<AlbumFormErrors>({})
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
+  const [coverImagePreview, setCoverImagePreview] = useState("")
+  const [isReordering, setIsReordering] = useState(false)
+
+  useEffect(() => {
+    if (!album) return
+    const values: ScalarForm = {
+      title: album.title,
+      slug: album.slug,
+      category: album.category,
+      location: album.location ?? "",
+      eventDate: album.event_date ?? "",
+      highlightVideoUrl: album.highlight_video_url ?? "",
+      coverImageKey: album.cover_image_key ?? "",
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm(values)
+    setSavedForm(values)
+  }, [album])
+
+  if (isLoading) {
+    return <FullPageLoading />
+  }
 
   if (!album || !form) {
     return (
       <div className="flex flex-col items-center gap-4 py-20 text-center">
-        <p className="text-sm text-muted-foreground">
-          Không tìm thấy album này.
-        </p>
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<Link href="/admin/albums" />}
-        >
+        <p className="text-sm text-muted-foreground">Không tìm thấy album này.</p>
+        <Button variant="outline" nativeButton={false} render={<Link href="/admin/albums" />}>
           Quay lại danh sách
         </Button>
       </div>
     )
   }
 
-  const isDirty = JSON.stringify(form) !== JSON.stringify(savedForm)
+  const isDirty =
+    JSON.stringify(form) !== JSON.stringify(savedForm) || coverImageFile !== null
 
-  function handleSave() {
-    if (!form) return
+  async function handleSave() {
+    if (!form || !album) return
+    if (updateAlbum.isPending || uploadCoverImage.isPending) return
 
-    const result = albumSchema.safeParse(form)
+    const result = albumSchema.safeParse({
+      title: form.title,
+      slug: form.slug,
+      category: form.category,
+      location: form.location,
+      eventDate: form.eventDate,
+      highlightVideoUrl: form.highlightVideoUrl,
+      coverImage: coverImageFile ? "pending" : form.coverImageKey,
+      isFeatured: album.is_featured,
+      isPublished: album.is_published,
+    })
     if (!result.success) {
       setErrors(fieldErrors(result.error.issues))
       toast.error("Vui lòng kiểm tra lại thông tin trước khi lưu")
       return
     }
-
     setErrors({})
-    updateAlbum(albumId, form)
-    setSavedForm(form)
-    toast.success("Đã lưu thay đổi")
+
+    let coverImageKey = form.coverImageKey
+    if (coverImageFile) {
+      try {
+        const uploaded = await uploadCoverImage.mutateAsync({
+          file: coverImageFile,
+          kind: "album-photo",
+          albumSlug: album.slug,
+        })
+        coverImageKey = uploaded.key
+      } catch {
+        toast.error("Không thể tải ảnh bìa lên")
+        return
+      }
+    }
+
+    updateAlbum.mutate(
+      {
+        title: form.title,
+        slug: form.slug,
+        location: form.location,
+        event_date: form.eventDate || null,
+        highlight_video_url: form.highlightVideoUrl || null,
+        cover_image_key: coverImageKey || null,
+      },
+      {
+        onSuccess: () => {
+          const savedValues = { ...form, coverImageKey }
+          setForm(savedValues)
+          setSavedForm(savedValues)
+          if (coverImagePreview) URL.revokeObjectURL(coverImagePreview)
+          setCoverImageFile(null)
+          setCoverImagePreview("")
+          toast.success("Đã lưu thay đổi")
+        },
+        onError: () => toast.error("Không thể lưu thay đổi"),
+      }
+    )
   }
+
+  const displayPhotos = album.photos.map((p) => ({
+    id: p.id,
+    url: publicImageUrl(p.image_key),
+  }))
+
+  const isBusy =
+    updateAlbum.isPending ||
+    deleteAlbum.isPending ||
+    uploadFile.isPending ||
+    uploadCoverImage.isPending ||
+    addPhoto.isPending ||
+    deletePhoto.isPending ||
+    updatePhotoSortOrder.isPending ||
+    isReordering
 
   return (
     <div className="flex flex-col gap-6">
+      <LoadingOverlay active={isBusy} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
@@ -120,13 +203,12 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
           <span className="text-sm font-medium text-foreground">
             {album.title || "(Chưa đặt tên)"}
           </span>
-          <Badge variant={album.isPublished ? "default" : "outline"}>
-            {album.isPublished ? "Đã đăng" : "Bản nháp"}
+          <Badge variant={album.is_published ? "default" : "outline"}>
+            {album.is_published ? "Đã đăng" : "Bản nháp"}
           </Badge>
         </div>
 
         <div className="flex items-center gap-2">
-          {isDirty && <Button onClick={handleSave}>Lưu thay đổi</Button>}
           <ConfirmDialog
             trigger={
               <Button variant="destructive" size="sm">
@@ -137,9 +219,17 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
             title={`Xoá "${album.title}"?`}
             description="Album và toàn bộ ảnh sẽ bị xoá vĩnh viễn. Không thể hoàn tác."
             onConfirm={() => {
-              deleteAlbum(albumId)
-              toast.success("Đã xoá album")
-              router.push("/admin/albums")
+              setIsDeleted(true)
+              deleteAlbum.mutate(albumId, {
+                onSuccess: () => {
+                  toast.success("Đã xoá album")
+                  router.push("/admin/albums")
+                },
+                onError: () => {
+                  setIsDeleted(false)
+                  toast.error("Không thể xoá album")
+                },
+              })
             }}
           />
         </div>
@@ -164,16 +254,12 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                     setForm({
                       ...form,
                       title,
-                      slug: slugTouched
-                        ? form.slug
-                        : composeSlug(title, form.eventDate),
+                      slug: slugTouched ? form.slug : composeSlug(title, form.eventDate),
                     })
                   }}
                   aria-invalid={Boolean(errors.title)}
                 />
-                {errors.title && (
-                  <p className="text-xs text-destructive">{errors.title}</p>
-                )}
+                {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="slug">Slug</Label>
@@ -186,9 +272,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                   }}
                   aria-invalid={Boolean(errors.slug)}
                 />
-                {errors.slug && (
-                  <p className="text-xs text-destructive">{errors.slug}</p>
-                )}
+                {errors.slug && <p className="text-xs text-destructive">{errors.slug}</p>}
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="category">Danh mục</Label>
@@ -203,13 +287,11 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(CATEGORY_LABEL) as AlbumCategory[]).map(
-                      (key) => (
-                        <SelectItem key={key} value={key}>
-                          {CATEGORY_LABEL[key]}
-                        </SelectItem>
-                      )
-                    )}
+                    {(Object.keys(CATEGORY_LABEL) as AlbumCategory[]).map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {CATEGORY_LABEL[key]}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -218,15 +300,11 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 <Input
                   id="location"
                   value={form.location}
-                  onChange={(e) =>
-                    setForm({ ...form, location: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
                   aria-invalid={Boolean(errors.location)}
                 />
                 {errors.location && (
-                  <p className="text-xs text-destructive">
-                    {errors.location}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.location}</p>
                 )}
               </div>
               <div className="flex flex-col gap-1.5">
@@ -245,9 +323,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                   >
                     <CalendarIcon className="size-4" />
                     {form.eventDate
-                      ? parseIsoDate(form.eventDate)?.toLocaleDateString(
-                          "vi-VN"
-                        )
+                      ? parseIsoDate(form.eventDate)?.toLocaleDateString("vi-VN")
                       : "Chọn ngày"}
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -260,9 +336,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                         setForm({
                           ...form,
                           eventDate,
-                          slug: slugTouched
-                            ? form.slug
-                            : composeSlug(form.title, eventDate),
+                          slug: slugTouched ? form.slug : composeSlug(form.title, eventDate),
                         })
                       }}
                       autoFocus
@@ -270,9 +344,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                   </PopoverContent>
                 </Popover>
                 {errors.eventDate && (
-                  <p className="text-xs text-destructive">
-                    {errors.eventDate}
-                  </p>
+                  <p className="text-xs text-destructive">{errors.eventDate}</p>
                 )}
               </div>
               <div className="flex flex-col gap-1.5">
@@ -295,22 +367,42 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 id="coverImage"
                 label="Ảnh bìa"
                 kind="image"
-                value={form.coverImage}
-                onChange={(url) => setForm({ ...form, coverImage: url })}
+                value={
+                  coverImagePreview ||
+                  (form.coverImageKey ? publicImageUrl(form.coverImageKey) : "")
+                }
+                uploading={uploadCoverImage.isPending}
+                onFileSelected={(file) => {
+                  if (coverImagePreview) URL.revokeObjectURL(coverImagePreview)
+                  setCoverImageFile(file)
+                  setCoverImagePreview(URL.createObjectURL(file))
+                }}
+                onClear={() => {
+                  if (coverImagePreview) URL.revokeObjectURL(coverImagePreview)
+                  setCoverImageFile(null)
+                  setCoverImagePreview("")
+                  setForm({ ...form, coverImageKey: "" })
+                }}
               />
               {errors.coverImage && (
-                <p className="text-xs text-destructive">
-                  {errors.coverImage}
-                </p>
+                <p className="text-xs text-destructive">{errors.coverImage}</p>
               )}
             </div>
+
+            {isDirty && (
+              <div className="flex justify-end border-t border-border pt-4">
+                <Button onClick={handleSave} disabled={updateAlbum.isPending}>
+                  Lưu thay đổi
+                </Button>
+              </div>
+            )}
           </div>
         </SectionCard>
 
         <SectionCard
           icon={SlidersHorizontal}
           title="Trạng thái"
-          description="Lưu cùng với thông tin album"
+          description="Cập nhật ngay khi bật/tắt"
         >
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -321,9 +413,17 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 </p>
               </div>
               <Switch
-                checked={form.isPublished}
+                checked={album.is_published}
+                disabled={updateAlbum.isPending}
                 onCheckedChange={(checked) =>
-                  setForm({ ...form, isPublished: checked })
+                  updateAlbum.mutate(
+                    { is_published: checked },
+                    {
+                      onSuccess: () =>
+                        toast.success(checked ? "Đã đăng album" : "Đã ẩn album"),
+                      onError: () => toast.error("Không thể cập nhật"),
+                    }
+                  )
                 }
               />
             </div>
@@ -336,9 +436,19 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 </p>
               </div>
               <Switch
-                checked={form.isFeatured}
+                checked={album.is_featured}
+                disabled={updateAlbum.isPending}
                 onCheckedChange={(checked) =>
-                  setForm({ ...form, isFeatured: checked })
+                  updateAlbum.mutate(
+                    { is_featured: checked },
+                    {
+                      onSuccess: () =>
+                        toast.success(
+                          checked ? "Đã đánh dấu nổi bật" : "Đã bỏ nổi bật"
+                        ),
+                      onError: () => toast.error("Không thể cập nhật"),
+                    }
+                  )
                 }
               />
             </div>
@@ -349,45 +459,57 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
       <SectionCard
         icon={GalleryHorizontal}
         title="Ảnh"
-        description="Kéo thứ tự bằng mũi tên, ảnh đầu tiên là ảnh đại diện trong lưới"
+        description="Mỗi thay đổi ở đây lưu ngay, không cần bấm Lưu thay đổi"
       >
         <div className="flex flex-col gap-2">
           <PhotoManager
-            photos={form.photos}
-            onAdd={(files) =>
-              setForm({
-                ...form,
-                photos: [
-                  ...form.photos,
-                  ...files.map((file) => ({
-                    id: crypto.randomUUID(),
-                    url: URL.createObjectURL(file),
-                  })),
-                ],
+            photos={displayPhotos}
+            onAdd={(files) => {
+              const baseSortOrder = album.photos.length
+              files.forEach(async (file, index) => {
+                try {
+                  const { key } = await uploadFile.mutateAsync({
+                    file,
+                    kind: "album-photo",
+                    albumSlug: album.slug,
+                  })
+                  await addPhoto.mutateAsync({
+                    imageKey: key,
+                    sortOrder: baseSortOrder + index,
+                  })
+                } catch {
+                  toast.error("Không thể tải ảnh lên")
+                }
               })
-            }
-            onRemove={(photoId) =>
-              setForm({
-                ...form,
-                photos: form.photos.filter((p) => p.id !== photoId),
+            }}
+            onRemove={(photoId) => {
+              deletePhoto.mutate(photoId, {
+                onError: () => toast.error("Không thể xoá ảnh"),
               })
-            }
-            onMove={(photoId, direction) => {
-              const index = form.photos.findIndex((p) => p.id === photoId)
+            }}
+            onMove={async (photoId, direction) => {
+              const index = album.photos.findIndex((p) => p.id === photoId)
               if (index === -1) return
               const swapWith = direction === "up" ? index - 1 : index + 1
-              if (swapWith < 0 || swapWith >= form.photos.length) return
-              const photos = [...form.photos]
-              ;[photos[index], photos[swapWith]] = [
-                photos[swapWith],
-                photos[index],
-              ]
-              setForm({ ...form, photos })
+              if (swapWith < 0 || swapWith >= album.photos.length) return
+
+              setIsReordering(true)
+              try {
+                await updatePhotoSortOrder.mutateAsync({
+                  photoId: album.photos[index].id,
+                  sortOrder: album.photos[swapWith].sort_order,
+                })
+                await updatePhotoSortOrder.mutateAsync({
+                  photoId: album.photos[swapWith].id,
+                  sortOrder: album.photos[index].sort_order,
+                })
+              } catch {
+                toast.error("Không thể sắp xếp ảnh")
+              } finally {
+                setIsReordering(false)
+              }
             }}
           />
-          {errors.photos && (
-            <p className="text-xs text-destructive">{errors.photos}</p>
-          )}
         </div>
       </SectionCard>
     </div>

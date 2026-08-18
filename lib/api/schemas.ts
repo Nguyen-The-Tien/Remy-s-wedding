@@ -18,6 +18,7 @@ export const createAlbumSchema = z.object({
   category: z.enum(["pre_wedding", "wedding"]),
   title: z.string().min(1),
   slug: z.string().min(1),
+  location: z.string().nullable().optional(),
   eventDate: z.string().nullable().optional(),
 })
 
