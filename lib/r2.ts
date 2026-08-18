@@ -31,10 +31,6 @@ export function buildPhotoKey(albumSlug: string, fileName: string): string {
   return `album-photos/${albumSlug}/${crypto.randomUUID()}${fileExtension(fileName)}`
 }
 
-export function buildHeroKey(fileName: string): string {
-  return `site-assets/hero${fileExtension(fileName)}`
-}
-
 export function buildHeroImageKey(fileName: string): string {
   return `site-assets/hero-images/${crypto.randomUUID()}${fileExtension(fileName)}`
 }

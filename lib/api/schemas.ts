@@ -8,11 +8,6 @@ export const presignRequestSchema = z.discriminatedUnion("kind", [
     albumSlug: z.string().min(1),
   }),
   z.object({
-    kind: z.literal("hero-video"),
-    fileName: z.string().min(1),
-    contentType: z.string().startsWith("video/"),
-  }),
-  z.object({
     kind: z.literal("hero-image"),
     fileName: z.string().min(1),
     contentType: z.string().startsWith("image/"),
@@ -74,5 +69,5 @@ export const updateSettingsSchema = z.object({
   facebook_link: z.string().nullable().optional(),
   instagram_link: z.string().nullable().optional(),
   hero_background_mode: z.enum(["video", "images"]).optional(),
-  hero_video_key: z.string().nullable().optional(),
+  hero_video_url: z.string().nullable().optional(),
 })

@@ -61,6 +61,27 @@ export async function getPublishedAlbumBySlug(
 
 // --- Admin reads/writes (service-role client, bypasses RLS) ---
 
+export async function getAlbumByIdAdmin(id: string): Promise<AlbumWithPhotos | null> {
+  const supabase = createAdminClient()
+
+  const { data: album, error } = await supabase
+    .from("albums")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle()
+  if (error) throw error
+  if (!album) return null
+
+  const { data: photos, error: photosError } = await supabase
+    .from("album_photos")
+    .select("*")
+    .eq("album_id", album.id)
+    .order("sort_order", { ascending: true })
+  if (photosError) throw photosError
+
+  return { ...album, photos: photos ?? [] }
+}
+
 export async function listAllAlbums(): Promise<AlbumRow[]> {
   const supabase = createAdminClient()
   const { data, error } = await supabase
@@ -160,6 +181,21 @@ export async function addPhoto(
   const { data, error } = await supabase
     .from("album_photos")
     .insert({ album_id: albumId, image_key: imageKey, sort_order: sortOrder })
+    .select("*")
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updatePhotoSortOrder(
+  photoId: string,
+  sortOrder: number
+): Promise<AlbumPhotoRow> {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from("album_photos")
+    .update({ sort_order: sortOrder })
+    .eq("id", photoId)
     .select("*")
     .single()
   if (error) throw error

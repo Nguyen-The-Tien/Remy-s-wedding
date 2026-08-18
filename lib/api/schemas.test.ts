@@ -24,11 +24,11 @@ describe("presignRequestSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  it("accepts a valid hero-video request", () => {
+  it("accepts a valid hero-image request", () => {
     const result = presignRequestSchema.safeParse({
-      kind: "hero-video",
-      fileName: "bg.mp4",
-      contentType: "video/mp4",
+      kind: "hero-image",
+      fileName: "bg.jpg",
+      contentType: "image/jpeg",
     })
     expect(result.success).toBe(true)
   })

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { buildHeroImageKey, buildHeroKey, buildPhotoKey, imageUrl } from "./r2"
+import { buildHeroImageKey, buildPhotoKey, imageUrl } from "./r2"
 
 describe("imageUrl", () => {
   it("joins the public base URL and the key", () => {
@@ -21,12 +21,6 @@ describe("buildPhotoKey", () => {
   it("handles a filename with no extension", () => {
     const key = buildPhotoKey("linh-minh-tam-dao", "IMG_0001")
     expect(key).toMatch(/^album-photos\/linh-minh-tam-dao\/[0-9a-f-]{36}$/)
-  })
-})
-
-describe("buildHeroKey", () => {
-  it("always resolves to site-assets/hero.<ext>", () => {
-    expect(buildHeroKey("background-video.mp4")).toBe("site-assets/hero.mp4")
   })
 })
 

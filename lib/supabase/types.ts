@@ -44,7 +44,7 @@ export type SiteSettingsRow = {
   facebook_link: string | null
   instagram_link: string | null
   hero_background_mode: HeroBackgroundMode
-  hero_video_key: string | null
+  hero_video_url: string | null
   updated_at: string
 }
 

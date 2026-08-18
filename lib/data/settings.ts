@@ -25,7 +25,7 @@ export async function updateSiteSettings(
       | "facebook_link"
       | "instagram_link"
       | "hero_background_mode"
-      | "hero_video_key"
+      | "hero_video_url"
     >
   >
 ): Promise<SiteSettingsRow> {

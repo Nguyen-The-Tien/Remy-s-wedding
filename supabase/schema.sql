@@ -46,7 +46,7 @@ create table site_settings (
   instagram_link text,
   hero_background_mode text not null default 'video'
     check (hero_background_mode in ('video', 'images')),
-  hero_video_key text,
+  hero_video_url text,
   updated_at timestamptz not null default now()
 );
 
