@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: "node",
     passWithNoTests: true,
+    exclude: ["**/node_modules/**", "**/.git/**", ".claude/worktrees/**"],
   },
   resolve: {
     alias: {

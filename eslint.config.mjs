@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // shadcn/ui generated primitives — vendored via `npx shadcn add`, not hand-authored.
     "components/ui/**",
+    // Claude Code isolated worktrees — separate checkouts, not part of this tree.
+    ".claude/worktrees/**",
   ]),
 ]);
 
