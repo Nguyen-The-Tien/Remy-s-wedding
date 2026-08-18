@@ -10,5 +10,11 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "."),
     },
+    conditions: ["react-server"],
+  },
+  ssr: {
+    resolve: {
+      conditions: ["react-server"],
+    },
   },
 })

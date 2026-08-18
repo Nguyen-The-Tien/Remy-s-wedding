@@ -11,7 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify:foundation": "tsx scripts/verify-foundation.ts"
+    "verify:foundation": "tsx --conditions=react-server scripts/verify-foundation.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1112.0",
