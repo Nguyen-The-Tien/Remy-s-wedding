@@ -17,13 +17,83 @@ import {
 } from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { CATEGORY_LABEL } from "@/lib/mock-albums"
-import { useAdminData } from "@/lib/admin/mock-store"
-import type { AdminAlbum } from "@/lib/admin/types"
+import { useDeleteAlbum, useUpdateAlbum } from "@/lib/queries/albums"
+import { publicImageUrl } from "@/lib/r2-url"
+import type { AlbumRow } from "@/lib/supabase/types"
 import { formatDdMmYyyy } from "@/lib/utils"
 
-export function AlbumTable({ albums }: { albums: AdminAlbum[] }) {
-  const { togglePublished, toggleFeatured, deleteAlbum } = useAdminData()
+function AlbumRowActions({ album }: { album: AlbumRow }) {
+  const updateAlbum = useUpdateAlbum(album.id)
+  const deleteAlbum = useDeleteAlbum()
 
+  return (
+    <>
+      <TableCell>
+        <Switch
+          checked={album.is_published}
+          disabled={updateAlbum.isPending}
+          onCheckedChange={(checked) => {
+            updateAlbum.mutate(
+              { is_published: checked },
+              {
+                onSuccess: () =>
+                  toast.success(checked ? "Đã đăng album" : "Đã ẩn album"),
+                onError: () => toast.error("Không thể cập nhật album"),
+              }
+            )
+          }}
+        />
+      </TableCell>
+      <TableCell>
+        <Switch
+          checked={album.is_featured}
+          disabled={updateAlbum.isPending}
+          onCheckedChange={(checked) =>
+            updateAlbum.mutate(
+              { is_featured: checked },
+              {
+                onSuccess: () =>
+                  toast.success(checked ? "Đã đánh dấu nổi bật" : "Đã bỏ nổi bật"),
+                onError: () => toast.error("Không thể cập nhật album"),
+              }
+            )
+          }
+        />
+      </TableCell>
+      <TableCell>
+        <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            nativeButton={false}
+            render={<Link href={`/admin/albums/${album.id}`} />}
+          >
+            <Pencil />
+            <span className="sr-only">Sửa</span>
+          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button variant="ghost" size="icon-sm">
+                <Trash2 />
+                <span className="sr-only">Xoá</span>
+              </Button>
+            }
+            title={`Xoá "${album.title}"?`}
+            description="Album và toàn bộ ảnh sẽ bị xoá vĩnh viễn. Không thể hoàn tác."
+            onConfirm={() => {
+              deleteAlbum.mutate(album.id, {
+                onSuccess: () => toast.success("Đã xoá album"),
+                onError: () => toast.error("Không thể xoá album"),
+              })
+            }}
+          />
+        </div>
+      </TableCell>
+    </>
+  )
+}
+
+export function AlbumTable({ albums }: { albums: AlbumRow[] }) {
   if (albums.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
@@ -51,10 +121,10 @@ export function AlbumTable({ albums }: { albums: AdminAlbum[] }) {
             <TableRow key={album.id}>
               <TableCell>
                 <div className="relative size-11 overflow-hidden rounded-md bg-muted">
-                  {album.coverImage && (
+                  {album.cover_image_key && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={album.coverImage}
+                      src={publicImageUrl(album.cover_image_key)}
                       alt=""
                       className="size-full object-cover"
                     />
@@ -71,57 +141,12 @@ export function AlbumTable({ albums }: { albums: AdminAlbum[] }) {
                 <p className="text-xs text-muted-foreground">/{album.slug}</p>
               </TableCell>
               <TableCell>
-                <Badge variant="outline">
-                  {CATEGORY_LABEL[album.category]}
-                </Badge>
+                <Badge variant="outline">{CATEGORY_LABEL[album.category]}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {album.eventDate ? formatDdMmYyyy(album.eventDate) : "—"}
+                {album.event_date ? formatDdMmYyyy(album.event_date) : "—"}
               </TableCell>
-              <TableCell>
-                <Switch
-                  checked={album.isPublished}
-                  onCheckedChange={() => {
-                    togglePublished(album.id)
-                    toast.success(
-                      album.isPublished ? "Đã ẩn album" : "Đã đăng album"
-                    )
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <Switch
-                  checked={album.isFeatured}
-                  onCheckedChange={() => toggleFeatured(album.id)}
-                />
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    nativeButton={false}
-                    render={<Link href={`/admin/albums/${album.id}`} />}
-                  >
-                    <Pencil />
-                    <span className="sr-only">Sửa</span>
-                  </Button>
-                  <ConfirmDialog
-                    trigger={
-                      <Button variant="ghost" size="icon-sm">
-                        <Trash2 />
-                        <span className="sr-only">Xoá</span>
-                      </Button>
-                    }
-                    title={`Xoá "${album.title}"?`}
-                    description="Album và toàn bộ ảnh sẽ bị xoá vĩnh viễn. Không thể hoàn tác."
-                    onConfirm={() => {
-                      deleteAlbum(album.id)
-                      toast.success("Đã xoá album")
-                    }}
-                  />
-                </div>
-              </TableCell>
+              <AlbumRowActions album={album} />
             </TableRow>
           ))}
         </TableBody>

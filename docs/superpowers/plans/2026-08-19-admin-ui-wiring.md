@@ -1602,7 +1602,11 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 onCheckedChange={(checked) =>
                   updateAlbum.mutate(
                     { is_published: checked },
-                    { onError: () => toast.error("Không thể cập nhật") }
+                    {
+                      onSuccess: () =>
+                        toast.success(checked ? "Đã đăng album" : "Đã ẩn album"),
+                      onError: () => toast.error("Không thể cập nhật"),
+                    }
                   )
                 }
               />
@@ -1621,7 +1625,13 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
                 onCheckedChange={(checked) =>
                   updateAlbum.mutate(
                     { is_featured: checked },
-                    { onError: () => toast.error("Không thể cập nhật") }
+                    {
+                      onSuccess: () =>
+                        toast.success(
+                          checked ? "Đã đánh dấu nổi bật" : "Đã bỏ nổi bật"
+                        ),
+                      onError: () => toast.error("Không thể cập nhật"),
+                    }
                   )
                 }
               />
