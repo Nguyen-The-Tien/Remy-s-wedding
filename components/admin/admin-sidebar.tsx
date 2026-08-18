@@ -13,7 +13,7 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { clearSession } from "@/lib/admin/auth"
+import { signOut } from "@/lib/admin/auth"
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
@@ -32,8 +32,8 @@ export function AdminSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
 
-  function handleLogout() {
-    clearSession()
+  async function handleLogout() {
+    await signOut()
     router.push("/admin/login")
   }
 

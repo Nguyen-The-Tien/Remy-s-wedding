@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { Loader2, Lock } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { checkCredentials, hasSession, setSession } from "@/lib/admin/auth"
+import { signIn } from "@/lib/admin/auth"
 import { APP_CONFIG } from "@/config/config"
 
 export function LoginScreen() {
@@ -17,24 +17,18 @@ export function LoginScreen() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (hasSession()) router.replace("/admin")
-  }, [router])
-
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
 
-    window.setTimeout(() => {
-      if (checkCredentials(email, password)) {
-        setSession()
-        router.push("/admin")
-        return
-      }
+    const { error } = await signIn(email, password)
+    if (error) {
       setError("Sai email hoặc mật khẩu.")
       setSubmitting(false)
-    }, 300)
+      return
+    }
+    router.push("/admin")
   }
 
   return (
@@ -91,10 +85,6 @@ export function LoginScreen() {
             </Button>
           </div>
         </form>
-
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Demo: admin@remys.vn / remys2026
-        </p>
       </div>
     </main>
   )

@@ -21,7 +21,7 @@ export function ChangePasswordCard() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [errors, setErrors] = useState<ChangePasswordFormErrors>({})
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
     const result = changePasswordSchema.safeParse({
@@ -34,8 +34,8 @@ export function ChangePasswordCard() {
       return
     }
 
-    const ok = changePassword(currentPassword, newPassword)
-    if (!ok) {
+    const { error } = await changePassword(currentPassword, newPassword)
+    if (error) {
       setErrors({ currentPassword: "Mật khẩu hiện tại không đúng" })
       return
     }
