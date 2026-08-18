@@ -62,28 +62,35 @@ export type Database = {
         Row: AlbumRow
         Insert: Partial<AlbumRow> & Pick<AlbumRow, "category" | "title" | "slug">
         Update: Partial<AlbumRow>
+        Relationships: []
       }
       album_photos: {
         Row: AlbumPhotoRow
         Insert: Partial<AlbumPhotoRow> & Pick<AlbumPhotoRow, "album_id" | "image_key">
         Update: Partial<AlbumPhotoRow>
+        Relationships: []
       }
       videos: {
         Row: VideoRow
         Insert: Partial<VideoRow> &
           Pick<VideoRow, "title" | "location" | "event_date" | "youtube_url">
         Update: Partial<VideoRow>
+        Relationships: []
       }
       site_settings: {
         Row: SiteSettingsRow
         Insert: Partial<SiteSettingsRow>
         Update: Partial<SiteSettingsRow>
+        Relationships: []
       }
       hero_images: {
         Row: HeroImageRow
         Insert: Partial<HeroImageRow> & Pick<HeroImageRow, "image_key">
         Update: Partial<HeroImageRow>
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
   }
 }
