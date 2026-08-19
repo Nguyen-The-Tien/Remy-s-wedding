@@ -5,9 +5,9 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel"
-import type { MockAlbum } from "@/lib/mock-albums"
+import type { AlbumCardData } from "@/lib/albums"
 
-export function RelatedAlbums({ albums }: { albums: MockAlbum[] }) {
+export function RelatedAlbums({ albums }: { albums: AlbumCardData[] }) {
   if (albums.length === 0) return null
 
   return (

@@ -9,7 +9,7 @@ import {
 import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import type { AlbumCredit } from "@/lib/mock-albums"
+import type { AlbumCredit } from "@/lib/albums"
 
 const ICONS: Record<string, LucideIcon> = {
   "Địa điểm": MapPin,

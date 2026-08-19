@@ -1,14 +1,23 @@
 import { ContactSection } from "@/components/contact-section"
-import { getAlbumBySlug, relatedAlbums } from "@/lib/mock-albums"
+import { buildAlbumCredits, type AlbumCardData, type AlbumDetailData } from "@/lib/albums"
+import type { ContactInfo } from "@/lib/contact"
 import { AlbumCredits } from "@/screens/album/components/album-credits"
 import { AlbumTitle } from "@/screens/album/components/album-title"
 import { HighlightVideo } from "@/screens/album/components/highlight-video"
 import { PhotoLightbox } from "@/screens/album/components/photo-lightbox"
 import { RelatedAlbums } from "@/screens/album/components/related-albums"
 
-export function AlbumScreen({ album }: { album: NonNullable<ReturnType<typeof getAlbumBySlug>> }) {
-  const related = relatedAlbums(album)
-  const listHref = `/${album.category.replace("_", "-")}`
+export function AlbumScreen({
+  album,
+  related,
+  contact,
+}: {
+  album: AlbumDetailData
+  related: AlbumCardData[]
+  contact: ContactInfo
+}) {
+  const listHref = album.category === "pre_wedding" ? "/pre-wedding" : "/wedding"
+  const credits = buildAlbumCredits(album.location)
 
   return (
     <main>
@@ -28,11 +37,11 @@ export function AlbumScreen({ album }: { album: NonNullable<ReturnType<typeof ge
         </div>
       </section>
 
-      <AlbumCredits credits={album.credits} />
+      <AlbumCredits credits={credits} />
 
       <RelatedAlbums albums={related} />
 
-      <ContactSection />
+      <ContactSection contact={contact} />
     </main>
   )
 }
