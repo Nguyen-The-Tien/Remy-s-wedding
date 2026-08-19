@@ -104,14 +104,31 @@ export async function getAlbumByIdAdmin(id: string): Promise<AlbumWithPhotos | n
   return { ...album, photos: photos ?? [] }
 }
 
-export async function listAllAlbums(): Promise<AlbumRow[]> {
+export async function getAlbumStatsAdmin(): Promise<
+  { category: AlbumCategory; is_published: boolean }[]
+> {
   const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from("albums")
-    .select("*")
-    .order("created_at", { ascending: false })
+  const { data, error } = await supabase.from("albums").select("category, is_published")
   if (error) throw error
   return data
+}
+
+export async function listAlbumsPageAdmin(
+  page: number,
+  pageSize: number,
+  category?: AlbumCategory
+): Promise<{ albums: AlbumRow[]; totalCount: number }> {
+  const supabase = createAdminClient()
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  let query = supabase
+    .from("albums")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+  if (category) query = query.eq("category", category)
+  const { data, error, count } = await query.range(from, to)
+  if (error) throw error
+  return { albums: data, totalCount: count ?? 0 }
 }
 
 export async function createAlbum(input: {

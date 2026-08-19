@@ -8,10 +8,24 @@ import type { AlbumCategory, AlbumPhotoRow, AlbumRow } from "@/lib/supabase/type
 
 type AlbumWithPhotos = AlbumRow & { photos: AlbumPhotoRow[] }
 
-export function useAlbums() {
+export function useAlbums(params: {
+  page: number
+  pageSize: number
+  category: AlbumCategory | "all"
+}) {
   return useQuery({
-    queryKey: queryKeys.albums,
-    queryFn: async () => (await http.get<AlbumRow[]>("/albums")).data,
+    queryKey: queryKeys.albumsList(params),
+    queryFn: async () =>
+      (
+        await http.get<{ albums: AlbumRow[]; totalCount: number }>("/albums", {
+          params: {
+            page: params.page,
+            pageSize: params.pageSize,
+            category: params.category === "all" ? undefined : params.category,
+          },
+        })
+      ).data,
+    placeholderData: (previousData) => previousData,
   })
 }
 

@@ -2,11 +2,17 @@ import { NextResponse } from "next/server"
 
 import { createAlbumSchema } from "@/lib/api/schemas"
 import { parseJsonBody } from "@/lib/api/validate"
-import { createAlbum, listAllAlbums } from "@/lib/data/albums"
+import { createAlbum, listAlbumsPageAdmin } from "@/lib/data/albums"
+import type { AlbumCategory } from "@/lib/supabase/types"
 
-export async function GET() {
-  const albums = await listAllAlbums()
-  return NextResponse.json(albums)
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const page = Math.max(1, Number(searchParams.get("page")) || 1)
+  const pageSize = Math.max(1, Number(searchParams.get("pageSize")) || 20)
+  const category = (searchParams.get("category") as AlbumCategory | null) ?? undefined
+
+  const { albums, totalCount } = await listAlbumsPageAdmin(page, pageSize, category)
+  return NextResponse.json({ albums, totalCount })
 }
 
 export async function POST(request: Request) {

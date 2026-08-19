@@ -36,14 +36,27 @@ export async function getPublishedVideosPage(
 
 // --- Admin reads/writes (service-role client, bypasses RLS) ---
 
-export async function listAllVideos(): Promise<VideoRow[]> {
+export async function getVideoStatsAdmin(): Promise<{ is_published: boolean }[]> {
   const supabase = createAdminClient()
-  const { data, error } = await supabase
-    .from("videos")
-    .select("*")
-    .order("created_at", { ascending: false })
+  const { data, error } = await supabase.from("videos").select("is_published")
   if (error) throw error
   return data
+}
+
+export async function listVideosPageAdmin(
+  page: number,
+  pageSize: number
+): Promise<{ videos: VideoRow[]; totalCount: number }> {
+  const supabase = createAdminClient()
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, error, count } = await supabase
+    .from("videos")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to)
+  if (error) throw error
+  return { videos: data, totalCount: count ?? 0 }
 }
 
 export async function createVideo(input: {

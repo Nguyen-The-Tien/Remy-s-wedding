@@ -6,8 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { FullPageLoading } from "@/components/admin/full-page-loading"
 import { CATEGORY_LABEL } from "@/lib/albums"
-import { useAlbums } from "@/lib/queries/albums"
-import { useVideos } from "@/lib/queries/videos"
+import { useAdminStats } from "@/lib/queries/admin-stats"
 
 const CATEGORY_ICON = {
   pre_wedding: Sparkles,
@@ -15,50 +14,46 @@ const CATEGORY_ICON = {
 } as const
 
 export function DashboardScreen() {
-  const { data: albums, isLoading: albumsLoading } = useAlbums()
-  const { data: videos, isLoading: videosLoading } = useVideos()
+  const { data: stats, isLoading } = useAdminStats()
 
-  if (albumsLoading || videosLoading || !albums || !videos) {
+  if (isLoading || !stats) {
     return <FullPageLoading />
   }
 
-  const albumStats = (["pre_wedding", "wedding"] as const).map((category) => {
-    const inCategory = albums.filter((a) => a.category === category)
-    return {
-      key: category,
-      label: CATEGORY_LABEL[category],
-      icon: CATEGORY_ICON[category],
-      total: inCategory.length,
-      published: inCategory.filter((a) => a.is_published).length,
-    }
-  })
+  const albumStats = (["pre_wedding", "wedding"] as const).map((category) => ({
+    key: category,
+    label: CATEGORY_LABEL[category],
+    icon: CATEGORY_ICON[category],
+    total: stats.albums[category].total,
+    published: stats.albums[category].published,
+  }))
 
-  const stats = [
+  const cardStats = [
     ...albumStats,
     {
       key: "video",
       label: "Video cưới",
       icon: Film,
-      total: videos.length,
-      published: videos.filter((v) => v.is_published).length,
+      total: stats.videos.total,
+      published: stats.videos.published,
     },
   ]
 
-  const publishedCount = albums.filter((a) => a.is_published).length
-  const draftCount = albums.length - publishedCount
+  const publishedCount = stats.albums.published
+  const draftCount = stats.albums.total - publishedCount
 
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-serif text-2xl text-foreground">Tổng quan</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {albums.length} album · {videos.length} video · {publishedCount} đã đăng ·{" "}
-          {draftCount} bản nháp
+          {stats.albums.total} album · {stats.videos.total} video · {publishedCount} đã đăng
+          · {draftCount} bản nháp
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        {stats.map((stat) => {
+        {cardStats.map((stat) => {
           const Icon = stat.icon
           const draft = stat.total - stat.published
           return (

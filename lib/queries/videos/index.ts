@@ -6,10 +6,16 @@ import { http } from "@/lib/queries/http"
 import { queryKeys } from "@/lib/queries/keys"
 import type { VideoRow } from "@/lib/supabase/types"
 
-export function useVideos() {
+export function useVideos(params: { page: number; pageSize: number }) {
   return useQuery({
-    queryKey: queryKeys.videos,
-    queryFn: async () => (await http.get<VideoRow[]>("/videos")).data,
+    queryKey: queryKeys.videosList(params),
+    queryFn: async () =>
+      (
+        await http.get<{ videos: VideoRow[]; totalCount: number }>("/videos", {
+          params,
+        })
+      ).data,
+    placeholderData: (previousData) => previousData,
   })
 }
 
