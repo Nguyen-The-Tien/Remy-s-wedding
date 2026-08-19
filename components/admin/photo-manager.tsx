@@ -1,9 +1,10 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { ArrowLeft, ArrowRight, ImagePlus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { PhotoViewerModal } from "@/components/photo-viewer-modal"
 import type { AdminPhoto } from "@/lib/admin/types"
 
 export function PhotoManager({
@@ -18,6 +19,7 @@ export function PhotoManager({
   onMove: (photoId: string, direction: "up" | "down") => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
@@ -55,11 +57,12 @@ export function PhotoManager({
           Chưa có ảnh nào. Bấm &ldquo;Thêm ảnh&rdquo; để tải lên.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {photos.map((photo, index) => (
             <div
               key={photo.id}
-              className="group relative aspect-[4/5] overflow-hidden rounded-lg border border-border bg-muted"
+              className="group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-lg border border-border bg-muted"
+              onClick={() => setSelectedPhoto(photo.url)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.url} alt="" className="size-full object-cover" />
@@ -70,7 +73,10 @@ export function PhotoManager({
                     type="button"
                     variant="secondary"
                     size="icon-xs"
-                    onClick={() => onRemove(photo.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onRemove(photo.id)
+                    }}
                   >
                     <X />
                     <span className="sr-only">Xoá ảnh</span>
@@ -82,7 +88,10 @@ export function PhotoManager({
                     variant="secondary"
                     size="icon-xs"
                     disabled={index === 0}
-                    onClick={() => onMove(photo.id, "up")}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onMove(photo.id, "up")
+                    }}
                   >
                     <ArrowLeft />
                     <span className="sr-only">Lên trước</span>
@@ -92,7 +101,10 @@ export function PhotoManager({
                     variant="secondary"
                     size="icon-xs"
                     disabled={index === photos.length - 1}
-                    onClick={() => onMove(photo.id, "down")}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onMove(photo.id, "down")
+                    }}
                   >
                     <ArrowRight />
                     <span className="sr-only">Ra sau</span>
@@ -103,6 +115,12 @@ export function PhotoManager({
           ))}
         </div>
       )}
+
+      <PhotoViewerModal
+        photo={selectedPhoto}
+        title="Ảnh"
+        onClose={() => setSelectedPhoto(null)}
+      />
     </div>
   )
 }
