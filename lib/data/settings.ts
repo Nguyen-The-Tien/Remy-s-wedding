@@ -1,10 +1,12 @@
 import "server-only"
 
+import { cache } from "react"
+
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createAnonClient } from "@/lib/supabase/anon"
 import type { SiteSettingsRow } from "@/lib/supabase/types"
 
-export async function getSiteSettings(): Promise<SiteSettingsRow> {
+export const getSiteSettings = cache(async (): Promise<SiteSettingsRow> => {
   const supabase = createAnonClient()
   const { data, error } = await supabase
     .from("site_settings")
@@ -13,7 +15,7 @@ export async function getSiteSettings(): Promise<SiteSettingsRow> {
     .single()
   if (error) throw error
   return data
-}
+})
 
 export async function updateSiteSettings(
   patch: Partial<
@@ -21,6 +23,7 @@ export async function updateSiteSettings(
       SiteSettingsRow,
       | "email"
       | "address"
+      | "phone"
       | "zalo_link"
       | "facebook_link"
       | "instagram_link"

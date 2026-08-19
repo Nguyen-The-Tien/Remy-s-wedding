@@ -35,6 +35,18 @@ export async function getFeaturedAlbums(): Promise<AlbumRow[]> {
   return data
 }
 
+export async function getRecentPublishedAlbums(limit = 8): Promise<AlbumRow[]> {
+  const supabase = createAnonClient()
+  const { data, error } = await supabase
+    .from("albums")
+    .select("*")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return data
+}
+
 export async function getPublishedAlbumBySlug(
   slug: string
 ): Promise<AlbumWithPhotos | null> {
