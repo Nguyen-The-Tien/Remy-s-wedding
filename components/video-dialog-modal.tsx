@@ -10,18 +10,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { getYouTubeId } from "@/lib/utils"
-
-export type VideoDialogItem = {
-  title: string
-  location: string
-  youtubeUrl: string
-}
+import type { VideoRow } from "@/lib/supabase/types"
 
 export function VideoDialogModal({
   video,
   onClose,
 }: {
-  video: VideoDialogItem | null
+  video: VideoRow | null
   onClose: () => void
 }) {
   const isOpen = video !== null
@@ -54,7 +49,7 @@ export function VideoDialogModal({
           <>
             <div className="relative aspect-video w-full bg-neutral-900">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(video.youtubeUrl)}?autoplay=1`}
+                src={`https://www.youtube-nocookie.com/embed/${getYouTubeId(video.youtube_url)}?autoplay=1`}
                 title={`Video — ${video.title}`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

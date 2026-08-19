@@ -4,10 +4,11 @@ import { useState } from "react"
 
 import { AlbumThumb } from "@/components/album-thumb"
 import { VideoDialogModal } from "@/components/video-dialog-modal"
-import { videoThumbnail, type VideoEntry } from "@/lib/mock-videos"
+import { videoThumbnail } from "@/lib/videos"
+import type { VideoRow } from "@/lib/supabase/types"
 
-export function VideoListGrid({ videos }: { videos: VideoEntry[] }) {
-  const [active, setActive] = useState<VideoEntry | null>(null)
+export function VideoListGrid({ videos }: { videos: VideoRow[] }) {
+  const [active, setActive] = useState<VideoRow | null>(null)
 
   return (
     <>
@@ -23,7 +24,7 @@ export function VideoListGrid({ videos }: { videos: VideoEntry[] }) {
               album={{
                 title: video.title,
                 location: video.location,
-                coverImage: videoThumbnail(video.youtubeUrl),
+                coverImage: videoThumbnail(video.youtube_url),
               }}
               isVideo
               imageClassName="aspect-[3/4]"
