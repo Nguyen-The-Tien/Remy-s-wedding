@@ -33,7 +33,7 @@ import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { MediaUploadField } from "@/components/admin/media-upload-field"
 import { PhotoManager } from "@/components/admin/photo-manager"
 import { SectionCard } from "@/components/admin/section-card"
-import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/mock-albums"
+import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/albums"
 import {
   useAddPhoto,
   useAlbum,

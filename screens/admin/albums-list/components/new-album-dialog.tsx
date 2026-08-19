@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/mock-albums"
+import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/albums"
 import { useCreateAlbum } from "@/lib/queries/albums"
 import { composeSlug, toIsoDate } from "@/lib/utils"
 

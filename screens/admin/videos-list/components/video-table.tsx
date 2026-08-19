@@ -17,7 +17,7 @@ import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { useDeleteVideo, useUpdateVideo } from "@/lib/queries/videos"
 import type { VideoRow } from "@/lib/supabase/types"
-import { videoThumbnail } from "@/lib/mock-videos"
+import { videoThumbnail } from "@/lib/videos"
 import { formatDdMmYyyy } from "@/lib/utils"
 import { VideoFormDialog } from "@/screens/admin/videos-list/components/video-form-dialog"
 

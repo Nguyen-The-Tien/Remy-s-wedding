@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FullPageLoading } from "@/components/admin/full-page-loading"
-import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/mock-albums"
+import { CATEGORY_LABEL, type AlbumCategory } from "@/lib/albums"
 import { useAlbums } from "@/lib/queries/albums"
 import { AlbumTable } from "@/screens/admin/albums-list/components/album-table"
 import { NewAlbumDialog } from "@/screens/admin/albums-list/components/new-album-dialog"

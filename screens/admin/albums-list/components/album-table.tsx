@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
 import { LoadingOverlay } from "@/components/admin/loading-overlay"
-import { CATEGORY_LABEL } from "@/lib/mock-albums"
+import { CATEGORY_LABEL } from "@/lib/albums"
 import { useDeleteAlbum, useUpdateAlbum } from "@/lib/queries/albums"
 import { publicImageUrl } from "@/lib/r2-url"
 import type { AlbumRow } from "@/lib/supabase/types"

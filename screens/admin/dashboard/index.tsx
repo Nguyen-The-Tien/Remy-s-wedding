@@ -5,7 +5,7 @@ import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { FullPageLoading } from "@/components/admin/full-page-loading"
-import { CATEGORY_LABEL } from "@/lib/mock-albums"
+import { CATEGORY_LABEL } from "@/lib/albums"
 import { useAlbums } from "@/lib/queries/albums"
 import { useVideos } from "@/lib/queries/videos"
 
