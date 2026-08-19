@@ -14,14 +14,16 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ConfirmDialog } from "@/components/admin/confirm-dialog"
-import { useAdminData } from "@/lib/admin/mock-store"
-import type { AdminVideo } from "@/lib/admin/types"
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
+import { useDeleteVideo, useUpdateVideo } from "@/lib/queries/videos"
+import type { VideoRow } from "@/lib/supabase/types"
 import { videoThumbnail } from "@/lib/mock-videos"
 import { formatDdMmYyyy } from "@/lib/utils"
 import { VideoFormDialog } from "@/screens/admin/videos-list/components/video-form-dialog"
 
-export function VideoTable({ videos }: { videos: AdminVideo[] }) {
-  const { toggleVideoPublished, deleteVideo } = useAdminData()
+export function VideoTable({ videos }: { videos: VideoRow[] }) {
+  const updateVideo = useUpdateVideo()
+  const deleteVideo = useDeleteVideo()
 
   if (videos.length === 0) {
     return (
@@ -33,6 +35,7 @@ export function VideoTable({ videos }: { videos: AdminVideo[] }) {
 
   return (
     <div className="rounded-xl border border-border bg-card">
+      <LoadingOverlay active={updateVideo.isPending || deleteVideo.isPending} />
       <Table>
         <TableHeader>
           <TableRow>
@@ -50,7 +53,7 @@ export function VideoTable({ videos }: { videos: AdminVideo[] }) {
                 <div className="relative size-11 overflow-hidden rounded-md bg-muted">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={videoThumbnail(video.youtubeUrl)}
+                    src={videoThumbnail(video.youtube_url)}
                     alt=""
                     className="size-full object-cover"
                   />
@@ -60,22 +63,25 @@ export function VideoTable({ videos }: { videos: AdminVideo[] }) {
                 <p className="font-medium text-foreground">
                   {video.title || "(Chưa đặt tên)"}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {video.location || "—"}
-                </p>
+                <p className="text-xs text-muted-foreground">{video.location || "—"}</p>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {video.eventDate ? formatDdMmYyyy(video.eventDate) : "—"}
+                {video.event_date ? formatDdMmYyyy(video.event_date) : "—"}
               </TableCell>
               <TableCell>
                 <Switch
-                  checked={video.isPublished}
-                  onCheckedChange={() => {
-                    toggleVideoPublished(video.id)
-                    toast.success(
-                      video.isPublished ? "Đã ẩn video" : "Đã đăng video"
+                  checked={video.is_published}
+                  disabled={updateVideo.isPending}
+                  onCheckedChange={(checked) =>
+                    updateVideo.mutate(
+                      { id: video.id, patch: { is_published: checked } },
+                      {
+                        onSuccess: () =>
+                          toast.success(checked ? "Đã đăng video" : "Đã ẩn video"),
+                        onError: () => toast.error("Không thể cập nhật video"),
+                      }
                     )
-                  }}
+                  }
                 />
               </TableCell>
               <TableCell>
@@ -99,8 +105,10 @@ export function VideoTable({ videos }: { videos: AdminVideo[] }) {
                     title={`Xoá video "${video.title}"?`}
                     description="Video sẽ bị xoá khỏi trang. Không thể hoàn tác."
                     onConfirm={() => {
-                      deleteVideo(video.id)
-                      toast.success("Đã xoá video")
+                      deleteVideo.mutate(video.id, {
+                        onSuccess: () => toast.success("Đã xoá video"),
+                        onError: () => toast.error("Không thể xoá video"),
+                      })
                     }}
                   />
                 </div>

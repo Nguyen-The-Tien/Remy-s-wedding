@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ReactElement } from "react"
 import { CalendarIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -19,9 +20,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { fieldErrors, videoSchema, type VideoFormErrors } from "@/lib/admin/schemas"
-import { useAdminData } from "@/lib/admin/mock-store"
-import type { AdminVideo, VideoFormValues } from "@/lib/admin/types"
+import { useCreateVideo, useUpdateVideo } from "@/lib/queries/videos"
+import type { VideoRow } from "@/lib/supabase/types"
 import { parseIsoDate, toIsoDate } from "@/lib/utils"
+
+type VideoFormValues = {
+  title: string
+  location: string
+  eventDate: string
+  youtubeUrl: string
+}
 
 const EMPTY_FORM: VideoFormValues = {
   title: "",
@@ -30,12 +38,12 @@ const EMPTY_FORM: VideoFormValues = {
   youtubeUrl: "",
 }
 
-function formFromVideo(video: AdminVideo): VideoFormValues {
+function formFromVideo(video: VideoRow): VideoFormValues {
   return {
     title: video.title,
     location: video.location,
-    eventDate: video.eventDate,
-    youtubeUrl: video.youtubeUrl,
+    eventDate: video.event_date,
+    youtubeUrl: video.youtube_url,
   }
 }
 
@@ -43,10 +51,11 @@ export function VideoFormDialog({
   video,
   trigger,
 }: {
-  video?: AdminVideo
+  video?: VideoRow
   trigger: ReactElement
 }) {
-  const { createVideo, updateVideo } = useAdminData()
+  const createVideo = useCreateVideo()
+  const updateVideo = useUpdateVideo()
   const isEdit = !!video
 
   const [open, setOpen] = useState(false)
@@ -65,6 +74,7 @@ export function VideoFormDialog({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (createVideo.isPending || updateVideo.isPending) return
     const result = videoSchema.safeParse(form)
     if (!result.success) {
       setErrors(fieldErrors(result.error.issues))
@@ -72,19 +82,50 @@ export function VideoFormDialog({
     }
 
     if (video) {
-      updateVideo(video.id, result.data)
-      toast.success("Đã lưu video")
+      updateVideo.mutate(
+        {
+          id: video.id,
+          patch: {
+            title: result.data.title,
+            location: result.data.location,
+            event_date: result.data.eventDate,
+            youtube_url: result.data.youtubeUrl,
+          },
+        },
+        {
+          onSuccess: () => {
+            toast.success("Đã lưu video")
+            setOpen(false)
+          },
+          onError: () => toast.error("Không thể lưu video"),
+        }
+      )
     } else {
-      createVideo(result.data)
-      toast.success("Đã thêm video")
+      createVideo.mutate(
+        {
+          title: result.data.title,
+          location: result.data.location,
+          eventDate: result.data.eventDate,
+          youtubeUrl: result.data.youtubeUrl,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Đã thêm video")
+            setOpen(false)
+          },
+          onError: () => toast.error("Không thể thêm video"),
+        }
+      )
     }
-    setOpen(false)
   }
+
+  const isPending = createVideo.isPending || updateVideo.isPending
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={trigger} />
       <DialogContent>
+        <LoadingOverlay active={isPending} />
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{isEdit ? "Sửa video" : "Thêm video"}</DialogTitle>
@@ -103,9 +144,7 @@ export function VideoFormDialog({
                 placeholder="Linh & Minh"
                 autoFocus
               />
-              {errors.title && (
-                <p className="text-xs text-destructive">{errors.title}</p>
-              )}
+              {errors.title && <p className="text-xs text-destructive">{errors.title}</p>}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -113,9 +152,7 @@ export function VideoFormDialog({
               <Input
                 id="video-location"
                 value={form.location}
-                onChange={(e) =>
-                  setForm({ ...form, location: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
                 placeholder="Phú Quốc"
               />
               {errors.location && (
@@ -162,9 +199,7 @@ export function VideoFormDialog({
               <Input
                 id="video-url"
                 value={form.youtubeUrl}
-                onChange={(e) =>
-                  setForm({ ...form, youtubeUrl: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, youtubeUrl: e.target.value })}
                 placeholder="https://youtube.com/watch?v=..."
               />
               {errors.youtubeUrl && (
@@ -174,7 +209,7 @@ export function VideoFormDialog({
           </div>
 
           <DialogFooter>
-            <Button type="submit">
+            <Button type="submit" disabled={isPending}>
               {isEdit ? "Lưu thay đổi" : "Thêm video"}
             </Button>
           </DialogFooter>
