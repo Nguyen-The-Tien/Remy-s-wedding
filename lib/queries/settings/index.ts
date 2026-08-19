@@ -22,6 +22,7 @@ export function useUpdateSettings() {
           SiteSettingsRow,
           | "email"
           | "address"
+          | "phone"
           | "zalo_link"
           | "facebook_link"
           | "instagram_link"

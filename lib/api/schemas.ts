@@ -66,6 +66,7 @@ export const updateHeroImageSchema = z.object({
 export const updateSettingsSchema = z.object({
   email: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
   zalo_link: z.string().nullable().optional(),
   facebook_link: z.string().nullable().optional(),
   instagram_link: z.string().nullable().optional(),

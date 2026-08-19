@@ -33,6 +33,7 @@ import {
 type ContactForm = {
   email: string
   address: string
+  phone: string
   zaloLink: string
   facebookLink: string
   instagramLink: string
@@ -64,6 +65,7 @@ export function SettingsScreen() {
     setContactForm({
       email: settings.email ?? "",
       address: settings.address ?? "",
+      phone: settings.phone ?? "",
       zaloLink: settings.zalo_link ?? "",
       facebookLink: settings.facebook_link ?? "",
       instagramLink: settings.instagram_link ?? "",
@@ -91,6 +93,7 @@ export function SettingsScreen() {
       {
         email: contactForm.email,
         address: contactForm.address,
+        phone: contactForm.phone,
         zalo_link: contactForm.zaloLink,
         facebook_link: contactForm.facebookLink,
         instagram_link: contactForm.instagramLink,
@@ -160,6 +163,21 @@ export function SettingsScreen() {
                 />
                 {contactErrors.email && (
                   <p className="text-xs text-destructive">{contactErrors.email}</p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="phone">Số điện thoại</Label>
+                <Input
+                  id="phone"
+                  value={contactForm.phone}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, phone: e.target.value })
+                  }
+                  aria-invalid={Boolean(contactErrors.phone)}
+                />
+                {contactErrors.phone && (
+                  <p className="text-xs text-destructive">{contactErrors.phone}</p>
                 )}
               </div>
 

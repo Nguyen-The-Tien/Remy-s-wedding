@@ -15,6 +15,7 @@ export const contactSettingsSchema = z.object({
     .min(1, "Vui lòng nhập email")
     .email("Email không hợp lệ"),
   address: z.string().trim().min(1, "Vui lòng nhập địa chỉ"),
+  phone: z.string().trim().min(1, "Vui lòng nhập số điện thoại"),
   zaloLink: urlOrEmpty(
     "Link Zalo không hợp lệ (cần bắt đầu bằng http:// hoặc https://)"
   ),
