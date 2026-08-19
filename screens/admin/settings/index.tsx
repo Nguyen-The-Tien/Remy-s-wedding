@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { Contact, Film } from "lucide-react"
 import { toast } from "sonner"
 
@@ -9,9 +9,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { AddressMapField } from "@/components/admin/address-map-field"
+import { FullPageLoading } from "@/components/admin/full-page-loading"
+import { LoadingOverlay } from "@/components/admin/loading-overlay"
 import { PhotoManager } from "@/components/admin/photo-manager"
 import { SectionCard } from "@/components/admin/section-card"
-import { useAdminData } from "@/lib/admin/mock-store"
+import {
+  useAddHeroImage,
+  useDeleteHeroImage,
+  useHeroImages,
+  useUpdateHeroImageSortOrder,
+} from "@/lib/queries/hero-images"
+import { useSettings, useUpdateSettings } from "@/lib/queries/settings"
+import { useUploadFile } from "@/lib/queries/uploads"
+import { publicImageUrl } from "@/lib/r2-url"
 import {
   contactSettingsSchema,
   fieldErrors,
@@ -19,63 +29,108 @@ import {
   type ContactSettingsFormErrors,
   type HeroSettingsFormErrors,
 } from "@/lib/admin/schemas"
-import type {
-  ContactSettingsValues,
-  HeroSettingsValues,
-} from "@/lib/admin/types"
+
+type ContactForm = {
+  email: string
+  address: string
+  zaloLink: string
+  facebookLink: string
+  instagramLink: string
+}
+
+type HeroForm = {
+  heroBackgroundMode: "video" | "images"
+  heroVideoUrl: string
+}
 
 export function SettingsScreen() {
-  const {
-    settings,
-    updateSettings,
-    addHeroImages,
-    removeHeroImage,
-    moveHeroImage,
-  } = useAdminData()
+  const { data: settings, isLoading } = useSettings()
+  const updateSettings = useUpdateSettings()
+  const { data: heroImages } = useHeroImages()
+  const addHeroImage = useAddHeroImage()
+  const deleteHeroImage = useDeleteHeroImage()
+  const updateHeroImageSortOrder = useUpdateHeroImageSortOrder()
+  const uploadFile = useUploadFile()
 
-  const [contactForm, setContactForm] = useState<ContactSettingsValues>(() => ({
-    email: settings.email,
-    address: settings.address,
-    zaloLink: settings.zaloLink,
-    facebookLink: settings.facebookLink,
-    instagramLink: settings.instagramLink,
-  }))
-  const [contactErrors, setContactErrors] = useState<ContactSettingsFormErrors>(
-    {}
-  )
+  const [contactForm, setContactForm] = useState<ContactForm | null>(null)
+  const [contactErrors, setContactErrors] = useState<ContactSettingsFormErrors>({})
 
-  const [heroForm, setHeroForm] = useState<HeroSettingsValues>(() => ({
-    heroBackgroundMode: settings.heroBackgroundMode,
-    heroVideoUrl: settings.heroVideoUrl,
-  }))
+  const [heroForm, setHeroForm] = useState<HeroForm | null>(null)
   const [heroErrors, setHeroErrors] = useState<HeroSettingsFormErrors>({})
+
+  useEffect(() => {
+    if (!settings) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setContactForm({
+      email: settings.email ?? "",
+      address: settings.address ?? "",
+      zaloLink: settings.zalo_link ?? "",
+      facebookLink: settings.facebook_link ?? "",
+      instagramLink: settings.instagram_link ?? "",
+    })
+    setHeroForm({
+      heroBackgroundMode: settings.hero_background_mode,
+      heroVideoUrl: settings.hero_video_url ?? "",
+    })
+  }, [settings])
+
+  if (isLoading || !contactForm || !heroForm) {
+    return <FullPageLoading />
+  }
 
   function handleSaveContact(e: FormEvent) {
     e.preventDefault()
+    if (!contactForm || updateSettings.isPending) return
     const result = contactSettingsSchema.safeParse(contactForm)
     if (!result.success) {
       setContactErrors(fieldErrors(result.error.issues))
       return
     }
     setContactErrors({})
-    updateSettings(contactForm)
-    toast.success("Đã lưu thông tin liên hệ")
+    updateSettings.mutate(
+      {
+        email: contactForm.email,
+        address: contactForm.address,
+        zalo_link: contactForm.zaloLink,
+        facebook_link: contactForm.facebookLink,
+        instagram_link: contactForm.instagramLink,
+      },
+      {
+        onSuccess: () => toast.success("Đã lưu thông tin liên hệ"),
+        onError: () => toast.error("Không thể lưu"),
+      }
+    )
   }
 
   function handleSaveHero(e: FormEvent) {
     e.preventDefault()
+    if (!heroForm || updateSettings.isPending) return
     const result = heroSettingsSchema.safeParse(heroForm)
     if (!result.success) {
       setHeroErrors(fieldErrors(result.error.issues))
       return
     }
     setHeroErrors({})
-    updateSettings(heroForm)
-    toast.success("Đã lưu nền trang chủ")
+    updateSettings.mutate(
+      {
+        hero_background_mode: heroForm.heroBackgroundMode,
+        hero_video_url: heroForm.heroVideoUrl,
+      },
+      {
+        onSuccess: () => toast.success("Đã lưu nền trang chủ"),
+        onError: () => toast.error("Không thể lưu"),
+      }
+    )
   }
+
+  const displayHeroImages = (heroImages ?? []).map((img) => ({
+    id: img.id,
+    url: publicImageUrl(img.image_key),
+  }))
 
   return (
     <div className="flex flex-col gap-6">
+      <LoadingOverlay active={updateSettings.isPending || uploadFile.isPending} />
       <div>
         <h1 className="font-serif text-2xl text-foreground">Cài đặt</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -104,9 +159,7 @@ export function SettingsScreen() {
                   aria-invalid={Boolean(contactErrors.email)}
                 />
                 {contactErrors.email && (
-                  <p className="text-xs text-destructive">
-                    {contactErrors.email}
-                  </p>
+                  <p className="text-xs text-destructive">{contactErrors.email}</p>
                 )}
               </div>
 
@@ -116,17 +169,12 @@ export function SettingsScreen() {
                   id="address"
                   value={contactForm.address}
                   onChange={(e) =>
-                    setContactForm({
-                      ...contactForm,
-                      address: e.target.value,
-                    })
+                    setContactForm({ ...contactForm, address: e.target.value })
                   }
                   aria-invalid={Boolean(contactErrors.address)}
                 />
                 {contactErrors.address && (
-                  <p className="text-xs text-destructive">
-                    {contactErrors.address}
-                  </p>
+                  <p className="text-xs text-destructive">{contactErrors.address}</p>
                 )}
                 <AddressMapField
                   address={contactForm.address}
@@ -142,17 +190,12 @@ export function SettingsScreen() {
                   id="zaloLink"
                   value={contactForm.zaloLink}
                   onChange={(e) =>
-                    setContactForm({
-                      ...contactForm,
-                      zaloLink: e.target.value,
-                    })
+                    setContactForm({ ...contactForm, zaloLink: e.target.value })
                   }
                   aria-invalid={Boolean(contactErrors.zaloLink)}
                 />
                 {contactErrors.zaloLink && (
-                  <p className="text-xs text-destructive">
-                    {contactErrors.zaloLink}
-                  </p>
+                  <p className="text-xs text-destructive">{contactErrors.zaloLink}</p>
                 )}
               </div>
 
@@ -162,10 +205,7 @@ export function SettingsScreen() {
                   id="facebookLink"
                   value={contactForm.facebookLink}
                   onChange={(e) =>
-                    setContactForm({
-                      ...contactForm,
-                      facebookLink: e.target.value,
-                    })
+                    setContactForm({ ...contactForm, facebookLink: e.target.value })
                   }
                   aria-invalid={Boolean(contactErrors.facebookLink)}
                 />
@@ -182,10 +222,7 @@ export function SettingsScreen() {
                   id="instagramLink"
                   value={contactForm.instagramLink}
                   onChange={(e) =>
-                    setContactForm({
-                      ...contactForm,
-                      instagramLink: e.target.value,
-                    })
+                    setContactForm({ ...contactForm, instagramLink: e.target.value })
                   }
                   aria-invalid={Boolean(contactErrors.instagramLink)}
                 />
@@ -197,7 +234,9 @@ export function SettingsScreen() {
               </div>
 
               <div className="flex justify-end border-t border-border pt-4">
-                <Button type="submit">Lưu thông tin liên hệ</Button>
+                <Button type="submit" disabled={updateSettings.isPending}>
+                  Lưu thông tin liên hệ
+                </Button>
               </div>
             </div>
           </SectionCard>
@@ -234,17 +273,12 @@ export function SettingsScreen() {
 
               {heroForm.heroBackgroundMode === "video" ? (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="heroVideoUrl">
-                    Link video (YouTube/Vimeo)
-                  </Label>
+                  <Label htmlFor="heroVideoUrl">Link video (YouTube/Vimeo)</Label>
                   <Input
                     id="heroVideoUrl"
                     value={heroForm.heroVideoUrl}
                     onChange={(e) =>
-                      setHeroForm({
-                        ...heroForm,
-                        heroVideoUrl: e.target.value,
-                      })
+                      setHeroForm({ ...heroForm, heroVideoUrl: e.target.value })
                     }
                     placeholder="https://youtube.com/watch?v=..."
                     aria-invalid={Boolean(heroErrors.heroVideoUrl)}
@@ -257,19 +291,56 @@ export function SettingsScreen() {
                 </div>
               ) : (
                 <PhotoManager
-                  photos={settings.heroImages}
-                  onAdd={(files) =>
-                    addHeroImages(
-                      files.map((file) => URL.createObjectURL(file))
-                    )
-                  }
-                  onRemove={removeHeroImage}
-                  onMove={moveHeroImage}
+                  photos={displayHeroImages}
+                  onAdd={(files) => {
+                    const baseSortOrder = (heroImages ?? []).length
+                    files.forEach(async (file, index) => {
+                      try {
+                        const { key } = await uploadFile.mutateAsync({
+                          file,
+                          kind: "hero-image",
+                        })
+                        await addHeroImage.mutateAsync({
+                          imageKey: key,
+                          sortOrder: baseSortOrder + index,
+                        })
+                      } catch {
+                        toast.error("Không thể tải ảnh lên")
+                      }
+                    })
+                  }}
+                  onRemove={(id) => {
+                    deleteHeroImage.mutate(id, {
+                      onError: () => toast.error("Không thể xoá ảnh"),
+                    })
+                  }}
+                  onMove={async (id, direction) => {
+                    const images = heroImages ?? []
+                    const index = images.findIndex((img) => img.id === id)
+                    if (index === -1) return
+                    const swapWith = direction === "up" ? index - 1 : index + 1
+                    if (swapWith < 0 || swapWith >= images.length) return
+
+                    try {
+                      await updateHeroImageSortOrder.mutateAsync({
+                        id: images[index].id,
+                        sortOrder: images[swapWith].sort_order,
+                      })
+                      await updateHeroImageSortOrder.mutateAsync({
+                        id: images[swapWith].id,
+                        sortOrder: images[index].sort_order,
+                      })
+                    } catch {
+                      toast.error("Không thể sắp xếp ảnh")
+                    }
+                  }}
                 />
               )}
 
               <div className="flex justify-end border-t border-border pt-4">
-                <Button type="submit">Lưu nền trang chủ</Button>
+                <Button type="submit" disabled={updateSettings.isPending}>
+                  Lưu nền trang chủ
+                </Button>
               </div>
             </div>
           </SectionCard>
