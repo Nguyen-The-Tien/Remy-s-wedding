@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 
 import { ContactSection } from "@/components/contact-section"
+import { SitePagination } from "@/components/site-pagination"
 import { VideoListGrid } from "@/screens/video-list/components/video-list-grid"
 import { VIDEO_CATEGORY_LABEL, VIDEO_CATEGORY_TITLE } from "@/lib/videos"
 import type { ContactInfo } from "@/lib/contact"
@@ -11,9 +12,13 @@ import type { VideoRow } from "@/lib/supabase/types"
 
 export function VideoListScreen({
   videos,
+  page,
+  totalPages,
   contact,
 }: {
   videos: VideoRow[]
+  page: number
+  totalPages: number
   contact: ContactInfo
 }) {
   return (
@@ -46,6 +51,7 @@ export function VideoListScreen({
       <section className="pb-20 md:pb-28">
         <div className="mx-auto max-w-[1440px] px-6 md:px-10">
           <VideoListGrid videos={videos} />
+          <SitePagination basePath="/videos" page={page} totalPages={totalPages} />
         </div>
       </section>
 

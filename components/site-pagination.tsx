@@ -24,7 +24,7 @@ function buildPageList(page: number, totalPages: number): (number | "ellipsis")[
   return result
 }
 
-export function AlbumPagination({
+export function SitePagination({
   basePath,
   page,
   totalPages,

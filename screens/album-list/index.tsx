@@ -5,7 +5,7 @@ import Link from "next/link"
 
 import { ContactSection } from "@/components/contact-section"
 import { AlbumGrid } from "@/screens/album-list/components/album-grid"
-import { AlbumPagination } from "@/screens/album-list/components/pagination"
+import { SitePagination } from "@/components/site-pagination"
 import { CATEGORY_LABEL, CATEGORY_TITLE, type AlbumCardData, type AlbumCategory } from "@/lib/albums"
 import type { ContactInfo } from "@/lib/contact"
 
@@ -54,7 +54,7 @@ export function AlbumListScreen({
       <section className="pb-20 md:pb-28">
         <div className="mx-auto max-w-[1440px] px-6 md:px-10">
           <AlbumGrid albums={albums} />
-          <AlbumPagination basePath={basePath} page={page} totalPages={totalPages} />
+          <SitePagination basePath={basePath} page={page} totalPages={totalPages} />
         </div>
       </section>
 

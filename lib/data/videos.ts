@@ -17,6 +17,23 @@ export async function getPublishedVideos(): Promise<VideoRow[]> {
   return data
 }
 
+export async function getPublishedVideosPage(
+  page: number,
+  pageSize: number
+): Promise<{ videos: VideoRow[]; totalCount: number }> {
+  const supabase = createAnonClient()
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, error, count } = await supabase
+    .from("videos")
+    .select("*", { count: "exact" })
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .range(from, to)
+  if (error) throw error
+  return { videos: data, totalCount: count ?? 0 }
+}
+
 // --- Admin reads/writes (service-role client, bypasses RLS) ---
 
 export async function listAllVideos(): Promise<VideoRow[]> {
