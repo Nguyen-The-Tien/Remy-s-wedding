@@ -5,13 +5,17 @@ import Link from "next/link"
 
 import { ContactSection } from "@/components/contact-section"
 import { VideoListGrid } from "@/screens/video-list/components/video-list-grid"
-import {
-  mockVideos,
-  VIDEO_CATEGORY_LABEL,
-  VIDEO_CATEGORY_TITLE,
-} from "@/lib/mock-videos"
+import { VIDEO_CATEGORY_LABEL, VIDEO_CATEGORY_TITLE } from "@/lib/videos"
+import type { ContactInfo } from "@/lib/contact"
+import type { VideoRow } from "@/lib/supabase/types"
 
-export function VideoListScreen() {
+export function VideoListScreen({
+  videos,
+  contact,
+}: {
+  videos: VideoRow[]
+  contact: ContactInfo
+}) {
   return (
     <main>
       <section className="pt-10 pb-10 md:pt-12 md:pb-14">
@@ -41,11 +45,11 @@ export function VideoListScreen() {
 
       <section className="pb-20 md:pb-28">
         <div className="mx-auto max-w-[1440px] px-6 md:px-10">
-          <VideoListGrid videos={mockVideos} />
+          <VideoListGrid videos={videos} />
         </div>
       </section>
 
-      <ContactSection />
+      <ContactSection contact={contact} />
     </main>
   )
 }
