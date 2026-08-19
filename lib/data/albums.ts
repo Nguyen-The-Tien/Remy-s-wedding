@@ -23,24 +23,32 @@ export async function getPublishedAlbumsByCategory(
   return data
 }
 
-export async function getFeaturedAlbums(): Promise<AlbumRow[]> {
+export async function getPublishedAlbumsByCategoryPage(
+  category: AlbumCategory,
+  page: number,
+  pageSize: number
+): Promise<{ albums: AlbumRow[]; totalCount: number }> {
   const supabase = createAnonClient()
-  const { data, error } = await supabase
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const { data, error, count } = await supabase
     .from("albums")
-    .select("*")
-    .eq("is_featured", true)
+    .select("*", { count: "exact" })
+    .eq("category", category)
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
+    .range(from, to)
   if (error) throw error
-  return data
+  return { albums: data, totalCount: count ?? 0 }
 }
 
-export async function getRecentPublishedAlbums(limit = 8): Promise<AlbumRow[]> {
+export async function getRecentFeaturedAlbums(limit = 8): Promise<AlbumRow[]> {
   const supabase = createAnonClient()
   const { data, error } = await supabase
     .from("albums")
     .select("*")
     .eq("is_published", true)
+    .eq("is_featured", true)
     .order("created_at", { ascending: false })
     .limit(limit)
   if (error) throw error

@@ -5,19 +5,25 @@ import Link from "next/link"
 
 import { ContactSection } from "@/components/contact-section"
 import { AlbumGrid } from "@/screens/album-list/components/album-grid"
-import { WeddingGrid } from "@/screens/album-list/components/wedding-grid"
+import { AlbumPagination } from "@/screens/album-list/components/pagination"
 import { CATEGORY_LABEL, CATEGORY_TITLE, type AlbumCardData, type AlbumCategory } from "@/lib/albums"
 import type { ContactInfo } from "@/lib/contact"
 
 export function AlbumListScreen({
   category,
   albums,
+  page,
+  totalPages,
   contact,
 }: {
   category: AlbumCategory
   albums: AlbumCardData[]
+  page: number
+  totalPages: number
   contact: ContactInfo
 }) {
+  const basePath = category === "pre_wedding" ? "/pre-wedding" : "/wedding"
+
   return (
     <main>
       <section className="pt-10 pb-10 md:pt-12 md:pb-14">
@@ -47,11 +53,8 @@ export function AlbumListScreen({
 
       <section className="pb-20 md:pb-28">
         <div className="mx-auto max-w-[1440px] px-6 md:px-10">
-          {category === "wedding" ? (
-            <WeddingGrid albums={albums} />
-          ) : (
-            <AlbumGrid albums={albums} />
-          )}
+          <AlbumGrid albums={albums} />
+          <AlbumPagination basePath={basePath} page={page} totalPages={totalPages} />
         </div>
       </section>
 
