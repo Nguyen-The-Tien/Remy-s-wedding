@@ -5,7 +5,6 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import {
   Carousel,
   CarouselContent,
@@ -14,17 +13,8 @@ import {
   CarouselNext,
   type CarouselApi,
 } from "@/components/ui/carousel"
-import { mockAlbums } from "@/lib/mock-albums"
 
-// TODO: temporary mock until hero content is wired up to the API/CMS.
-// `heroData` stands in for what the API will return: either a video url
-// or a list of image urls, and the UI picks how to render based on that.
-type HeroData = { video: string } | { images: string[] }
-
-const heroDataByMode: Record<"video" | "images", HeroData> = {
-  video: { video: "/Webcover.mp4" },
-  images: { images: mockAlbums.slice(0, 6).map((album) => album.coverImage) },
-}
+export type HeroData = { video: string } | { images: string[] }
 
 const container = {
   hidden: {},
@@ -42,12 +32,7 @@ const item = {
   },
 }
 
-export function Hero() {
-  // Temporary dev toggle — mocks the video-vs-images cases the real
-  // hero data (from the API) will eventually come in as.
-  const [mode, setMode] = useState<"video" | "images">("video")
-  const heroData = heroDataByMode[mode]
-
+export function Hero({ heroData }: { heroData: HeroData }) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>()
   const [activeSlide, setActiveSlide] = useState(0)
 
@@ -68,16 +53,6 @@ export function Hero() {
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-900 sm:aspect-[16/9] md:aspect-[21/9]"
       >
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setMode((m) => (m === "video" ? "images" : "video"))}
-          className="absolute top-4 right-4 z-10 border-white/30 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
-        >
-          Dev: xem {mode === "video" ? "ảnh" : "video"}
-        </Button>
-
         {"video" in heroData ? (
           <video
             autoPlay
