@@ -1,8 +1,8 @@
 import { AlbumLink } from "@/components/album-link"
 import { AlbumThumb } from "@/components/album-thumb"
-import type { MockAlbum } from "@/lib/mock-albums"
+import type { AlbumCardData } from "@/lib/albums"
 
-export function WeddingGrid({ albums }: { albums: MockAlbum[] }) {
+export function WeddingGrid({ albums }: { albums: AlbumCardData[] }) {
   const [featured, ...rest] = albums
 
   if (!featured) return null

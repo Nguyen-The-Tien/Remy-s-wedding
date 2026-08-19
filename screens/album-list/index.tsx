@@ -6,16 +6,18 @@ import Link from "next/link"
 import { ContactSection } from "@/components/contact-section"
 import { AlbumGrid } from "@/screens/album-list/components/album-grid"
 import { WeddingGrid } from "@/screens/album-list/components/wedding-grid"
-import {
-  albumsByCategory,
-  CATEGORY_LABEL,
-  CATEGORY_TITLE,
-  type AlbumCategory,
-} from "@/lib/mock-albums"
+import { CATEGORY_LABEL, CATEGORY_TITLE, type AlbumCardData, type AlbumCategory } from "@/lib/albums"
+import type { ContactInfo } from "@/lib/contact"
 
-export function AlbumListScreen({ category }: { category: AlbumCategory }) {
-  const albums = albumsByCategory(category)
-
+export function AlbumListScreen({
+  category,
+  albums,
+  contact,
+}: {
+  category: AlbumCategory
+  albums: AlbumCardData[]
+  contact: ContactInfo
+}) {
   return (
     <main>
       <section className="pt-10 pb-10 md:pt-12 md:pb-14">
@@ -53,7 +55,7 @@ export function AlbumListScreen({ category }: { category: AlbumCategory }) {
         </div>
       </section>
 
-      <ContactSection />
+      <ContactSection contact={contact} />
     </main>
   )
 }
