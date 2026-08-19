@@ -42,7 +42,6 @@ export default async function Page({
 
   const related = categoryAlbums
     .filter((a) => a.id !== album.id)
-    .slice(0, 4)
     .map(toAlbumCardData)
 
   return (

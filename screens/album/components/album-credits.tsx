@@ -1,11 +1,4 @@
-import {
-  Camera,
-  Clapperboard,
-  Info,
-  MapPin,
-  Shirt,
-  Sparkles,
-} from "lucide-react"
+import { Camera, Clapperboard, Info, MapPin, Sparkles } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -15,7 +8,6 @@ const ICONS: Record<string, LucideIcon> = {
   "Địa điểm": MapPin,
   "Chụp ảnh": Camera,
   "Quay phim": Clapperboard,
-  "Trang phục": Shirt,
   "Trang điểm": Sparkles,
 }
 
@@ -27,15 +19,15 @@ export function AlbumCredits({ credits }: { credits: AlbumCredit[] }) {
           Thực hiện
         </p>
 
-        <dl className="mt-10 flex flex-wrap gap-y-10">
+        <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4 lg:gap-x-8">
           {credits.map((credit, i) => {
             const Icon = ICONS[credit.label] ?? Info
             return (
               <div
                 key={credit.label}
                 className={cn(
-                  "min-w-[45%] flex-1 pr-6 sm:min-w-[180px]",
-                  i > 0 && "sm:border-l sm:border-border sm:pl-8"
+                  "pr-6",
+                  i > 0 && "lg:border-l lg:border-border lg:pl-8"
                 )}
               >
                 <Icon className="size-4 text-clay" strokeWidth={1.6} />

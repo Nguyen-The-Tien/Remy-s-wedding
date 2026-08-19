@@ -19,6 +19,7 @@ export async function getPublishedAlbumsByCategory(
     .eq("category", category)
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
+    .limit(8)
   if (error) throw error
   return data
 }

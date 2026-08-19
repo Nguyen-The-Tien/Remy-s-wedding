@@ -59,7 +59,6 @@ export function buildAlbumCredits(location: string): AlbumCredit[] {
     { label: "Địa điểm", value: location },
     { label: "Chụp ảnh", value: "Remy's Studio" },
     { label: "Quay phim", value: "Remy's Films (highlight)" },
-    { label: "Trang phục", value: "Lộng Lẫy Bridal" },
     { label: "Trang điểm", value: "Mai Anh Makeup" },
   ]
 }
