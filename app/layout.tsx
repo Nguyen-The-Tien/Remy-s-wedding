@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { EB_Garamond, Instrument_Sans } from "next/font/google"
+import NextTopLoader from "nextjs-toploader"
 
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
@@ -43,6 +44,7 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
+          <NextTopLoader showSpinner={false} color="var(--clay)" />
           {children}
           <Toaster position="top-right" closeButton />
         </ThemeProvider>

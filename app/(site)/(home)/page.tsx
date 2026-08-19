@@ -13,7 +13,7 @@ export default async function Page() {
     await Promise.all([
       getSiteSettings(),
       listHeroImages(),
-      getPublishedAlbumsByCategory("pre_wedding"),
+      getPublishedAlbumsByCategory("pre_wedding", 4),
       getPublishedAlbumsByCategory("wedding"),
       getPublishedVideos(),
       getRecentFeaturedAlbums(8),
@@ -27,7 +27,7 @@ export default async function Page() {
   return (
     <HomeScreen
       heroData={heroData}
-      preWeddingAlbums={preWeddingAlbumsRaw.slice(0, 4).map(toAlbumCardData)}
+      preWeddingAlbums={preWeddingAlbumsRaw.map(toAlbumCardData)}
       weddingAlbums={weddingAlbumsRaw.slice(0, 8).map(toAlbumCardData)}
       videos={videos.slice(0, 4)}
       recentAlbums={recentAlbums.map(toAlbumCardData)}

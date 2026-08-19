@@ -10,7 +10,8 @@ export type AlbumWithPhotos = AlbumRow & { photos: AlbumPhotoRow[] }
 // --- Public reads (anon client, RLS-restricted to published rows) ---
 
 export async function getPublishedAlbumsByCategory(
-  category: AlbumCategory
+  category: AlbumCategory,
+  limit = 8
 ): Promise<AlbumRow[]> {
   const supabase = createAnonClient()
   const { data, error } = await supabase
@@ -19,7 +20,7 @@ export async function getPublishedAlbumsByCategory(
     .eq("category", category)
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
-    .limit(8)
+    .limit(limit)
   if (error) throw error
   return data
 }
