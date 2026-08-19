@@ -1,14 +1,13 @@
 import Link from "next/link"
 
-import { albumHref } from "@/lib/mock-albums"
-import type { MockAlbum } from "@/lib/mock-albums"
+import { albumHref, type AlbumCardData } from "@/lib/albums"
 
 export function AlbumLink({
   album,
   className,
   children,
 }: {
-  album: MockAlbum
+  album: Pick<AlbumCardData, "category" | "slug">
   className?: string
   children: React.ReactNode
 }) {
