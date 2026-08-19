@@ -40,6 +40,7 @@ export type SiteSettingsRow = {
   id: number
   email: string | null
   address: string | null
+  phone: string | null
   zalo_link: string | null
   facebook_link: string | null
   instagram_link: string | null

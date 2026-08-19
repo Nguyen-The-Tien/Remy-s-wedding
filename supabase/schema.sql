@@ -41,6 +41,7 @@ create table site_settings (
   id int primary key default 1 check (id = 1),
   email text,
   address text,
+  phone text,
   zalo_link text,
   facebook_link text,
   instagram_link text,
