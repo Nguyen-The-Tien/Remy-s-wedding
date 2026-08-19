@@ -5,9 +5,9 @@ import {
 } from "@/components/ui/carousel"
 import { AlbumLink } from "@/components/album-link"
 import { AlbumThumb } from "@/components/album-thumb"
-import type { MockAlbum } from "@/lib/mock-albums"
+import type { AlbumCardData } from "@/lib/albums"
 
-export function AlbumFilmRow({ albums }: { albums: MockAlbum[] }) {
+export function AlbumFilmRow({ albums }: { albums: AlbumCardData[] }) {
   return (
     <>
       <Carousel opts={{ align: "start" }} className="w-full lg:hidden">

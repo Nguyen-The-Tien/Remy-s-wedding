@@ -11,11 +11,9 @@ import {
 } from "@/components/ui/carousel"
 import { AlbumLink } from "@/components/album-link"
 import { AlbumThumb } from "@/components/album-thumb"
-import { recentAlbums } from "@/lib/mock-albums"
+import type { AlbumCardData } from "@/lib/albums"
 
-export function RecentStories() {
-  const albums = recentAlbums(8)
-
+export function RecentStories({ albums }: { albums: AlbumCardData[] }) {
   return (
     <section>
       <Carousel opts={{ align: "start" }} className="w-full">

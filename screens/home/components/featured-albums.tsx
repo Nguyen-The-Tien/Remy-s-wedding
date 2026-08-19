@@ -6,14 +6,19 @@ import type { ReactNode } from "react"
 
 import { AlbumFilmRow } from "@/screens/home/components/album-film-row"
 import { VideoGrid } from "@/screens/home/components/video-grid"
-import {
-  albumsByCategory,
-  CATEGORY_LABEL,
-  CATEGORY_TITLE,
-} from "@/lib/mock-albums"
-import { mockVideos, VIDEO_CATEGORY_LABEL, VIDEO_CATEGORY_TITLE } from "@/lib/mock-videos"
+import { CATEGORY_LABEL, CATEGORY_TITLE, type AlbumCardData } from "@/lib/albums"
+import { VIDEO_CATEGORY_LABEL, VIDEO_CATEGORY_TITLE } from "@/lib/videos"
+import type { VideoRow } from "@/lib/supabase/types"
 
-export function FeaturedAlbums() {
+export function FeaturedAlbums({
+  preWeddingAlbums,
+  weddingAlbums,
+  videos,
+}: {
+  preWeddingAlbums: AlbumCardData[]
+  weddingAlbums: AlbumCardData[]
+  videos: VideoRow[]
+}) {
   return (
     <>
       <Section
@@ -22,7 +27,7 @@ export function FeaturedAlbums() {
         title={CATEGORY_TITLE.pre_wedding}
         href="/pre-wedding"
       >
-        <AlbumFilmRow albums={albumsByCategory("pre_wedding", 4)} />
+        <AlbumFilmRow albums={preWeddingAlbums} />
       </Section>
 
       <Section
@@ -31,7 +36,7 @@ export function FeaturedAlbums() {
         title={CATEGORY_TITLE.wedding}
         href="/wedding"
       >
-        <AlbumFilmRow albums={albumsByCategory("wedding", 8)} />
+        <AlbumFilmRow albums={weddingAlbums} />
       </Section>
 
       <Section
@@ -40,7 +45,7 @@ export function FeaturedAlbums() {
         title={VIDEO_CATEGORY_TITLE}
         href="/videos"
       >
-        <VideoGrid videos={mockVideos.slice(0, 4)} />
+        <VideoGrid videos={videos} />
       </Section>
     </>
   )
