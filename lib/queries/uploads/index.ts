@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query"
 import { http } from "@/lib/queries/http"
 import { publicImageUrl } from "@/lib/r2-url"
 
-type UploadKind = "album-photo" | "hero-image"
+type UploadKind = "album-photo" | "hero-image" | "hero-video"
 
 type UploadInput = {
   file: File

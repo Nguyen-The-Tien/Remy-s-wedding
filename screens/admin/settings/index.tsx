@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
-import { Contact, Film } from "lucide-react"
+import { useEffect, useRef, useState, type FormEvent } from "react"
+import { Contact, Film, Upload } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -52,6 +52,7 @@ export function SettingsScreen() {
   const deleteHeroImage = useDeleteHeroImage()
   const updateHeroImageSortOrder = useUpdateHeroImageSortOrder()
   const uploadFile = useUploadFile()
+  const videoFileInputRef = useRef<HTMLInputElement>(null)
 
   const [contactForm, setContactForm] = useState<ContactForm | null>(null)
   const [contactErrors, setContactErrors] = useState<ContactSettingsFormErrors>({})
@@ -124,6 +125,20 @@ export function SettingsScreen() {
         onError: () => toast.error("Không thể lưu"),
       }
     )
+  }
+
+  async function handleVideoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file || !heroForm) return
+
+    try {
+      const { url } = await uploadFile.mutateAsync({ file, kind: "hero-video" })
+      setHeroForm({ ...heroForm, heroVideoUrl: url })
+      setHeroErrors({})
+    } catch {
+      toast.error("Không thể tải video lên")
+    }
   }
 
   const displayHeroImages = (heroImages ?? []).map((img) => ({
@@ -291,20 +306,45 @@ export function SettingsScreen() {
 
               {heroForm.heroBackgroundMode === "video" ? (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="heroVideoUrl">Link video (YouTube/Vimeo)</Label>
-                  <Input
-                    id="heroVideoUrl"
-                    value={heroForm.heroVideoUrl}
-                    onChange={(e) =>
-                      setHeroForm({ ...heroForm, heroVideoUrl: e.target.value })
-                    }
-                    placeholder="https://youtube.com/watch?v=..."
-                    aria-invalid={Boolean(heroErrors.heroVideoUrl)}
-                  />
+                  <Label htmlFor="heroVideoUrl">Link video (.mp4)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="heroVideoUrl"
+                      value={heroForm.heroVideoUrl}
+                      disabled
+                      placeholder="Chưa có video — bấm Tải lên"
+                      aria-invalid={Boolean(heroErrors.heroVideoUrl)}
+                    />
+                    <input
+                      ref={videoFileInputRef}
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={handleVideoFileChange}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={uploadFile.isPending}
+                      onClick={() => videoFileInputRef.current?.click()}
+                    >
+                      <Upload className="size-4" />
+                      Tải lên
+                    </Button>
+                  </div>
                   {heroErrors.heroVideoUrl && (
                     <p className="text-xs text-destructive">
                       {heroErrors.heroVideoUrl}
                     </p>
+                  )}
+                  {heroForm.heroVideoUrl && (
+                    <video
+                      key={heroForm.heroVideoUrl}
+                      src={heroForm.heroVideoUrl}
+                      controls
+                      muted
+                      className="mt-2 aspect-video w-full rounded-md bg-neutral-900"
+                    />
                   )}
                 </div>
               ) : (

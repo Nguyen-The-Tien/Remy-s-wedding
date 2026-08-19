@@ -2,7 +2,12 @@ import { NextResponse } from "next/server"
 
 import { presignRequestSchema } from "@/lib/api/schemas"
 import { parseJsonBody } from "@/lib/api/validate"
-import { buildHeroImageKey, buildPhotoKey, presignUpload } from "@/lib/r2"
+import {
+  buildHeroImageKey,
+  buildHeroVideoKey,
+  buildPhotoKey,
+  presignUpload,
+} from "@/lib/r2"
 
 export async function POST(request: Request) {
   const parsed = await parseJsonBody(request, presignRequestSchema)
@@ -12,7 +17,9 @@ export async function POST(request: Request) {
   const key =
     body.kind === "album-photo"
       ? buildPhotoKey(body.albumSlug, body.fileName)
-      : buildHeroImageKey(body.fileName)
+      : body.kind === "hero-video"
+        ? buildHeroVideoKey(body.fileName)
+        : buildHeroImageKey(body.fileName)
 
   const uploadUrl = await presignUpload(key, body.contentType)
   return NextResponse.json({ uploadUrl, key })

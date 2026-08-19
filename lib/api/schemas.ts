@@ -12,6 +12,11 @@ export const presignRequestSchema = z.discriminatedUnion("kind", [
     fileName: z.string().min(1),
     contentType: z.string().startsWith("image/"),
   }),
+  z.object({
+    kind: z.literal("hero-video"),
+    fileName: z.string().min(1),
+    contentType: z.string().startsWith("video/"),
+  }),
 ])
 
 export const createAlbumSchema = z.object({
