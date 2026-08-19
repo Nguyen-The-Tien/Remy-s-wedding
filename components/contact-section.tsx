@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion"
 
-import { APP_CONFIG } from "@/config/config"
-import { SOCIAL_LINKS } from "@/lib/socials"
+import { buildSocialLinks } from "@/lib/socials"
+import type { ContactInfo } from "@/lib/contact"
 
 const socialContainer = {
   hidden: {},
@@ -22,7 +22,9 @@ const socialItem = {
   },
 }
 
-export function ContactSection() {
+export function ContactSection({ contact }: { contact: ContactInfo }) {
+  const socialLinks = buildSocialLinks(contact)
+
   return (
     <section
       id="contact"
@@ -66,7 +68,7 @@ export function ContactSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-4 text-sm text-[var(--on-image)]/60"
         >
-          {APP_CONFIG.contact.email}
+          {contact.email}
         </motion.p>
 
         <motion.div
@@ -76,7 +78,7 @@ export function ContactSection() {
           viewport={{ once: true, margin: "-10%" }}
           className="mt-12 flex flex-wrap justify-center gap-3"
         >
-          {SOCIAL_LINKS.map(({ label, href, icon }) => (
+          {socialLinks.map(({ label, href, icon }) => (
             <motion.a
               key={label}
               variants={socialItem}

@@ -2,12 +2,14 @@
 
 import { motion } from "framer-motion"
 
-import { SOCIAL_LINKS } from "@/lib/socials"
+import { buildSocialLinks, type SocialUrls } from "@/lib/socials"
 
-export function FloatingSocial() {
+export function FloatingSocial({ contact }: { contact: SocialUrls }) {
+  const socialLinks = buildSocialLinks(contact)
+
   return (
     <div className="fixed right-6 bottom-8 z-40 flex flex-col gap-3 sm:right-10 sm:bottom-16">
-      {SOCIAL_LINKS.map(({ label, href, icon }, index) => (
+      {socialLinks.map(({ label, href, icon }, index) => (
         <motion.a
           key={label}
           href={href}

@@ -4,14 +4,8 @@ import { motion } from "framer-motion"
 import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react"
 import Link from "next/link"
 
-import { APP_CONFIG } from "@/config/config"
-import { SOCIAL_LINKS } from "@/lib/socials"
-
-const INFO_ITEMS = [
-  { icon: MapPin, label: "Địa chỉ", value: APP_CONFIG.contact.address },
-  { icon: Mail, label: "Email", value: APP_CONFIG.contact.email },
-  { icon: Phone, label: "Điện thoại", value: APP_CONFIG.contact.phone },
-]
+import { buildSocialLinks } from "@/lib/socials"
+import type { ContactInfo } from "@/lib/contact"
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
@@ -39,13 +33,20 @@ const socialItem = {
   },
 }
 
-export function ContactScreen() {
+export function ContactScreen({ contact }: { contact: ContactInfo }) {
+  const infoItems = [
+    { icon: MapPin, label: "Địa chỉ", value: contact.address },
+    { icon: Mail, label: "Email", value: contact.email },
+    { icon: Phone, label: "Điện thoại", value: contact.phone },
+  ]
+  const socialLinks = buildSocialLinks(contact)
+
   const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(
-    APP_CONFIG.contact.address
+    contact.address
   )}&output=embed`
 
   const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    APP_CONFIG.contact.address
+    contact.address
   )}`
 
   return (
@@ -98,12 +99,12 @@ export function ContactScreen() {
             className="md:col-span-5"
           >
             <div>
-              {INFO_ITEMS.map(({ icon: Icon, label, value }, i) => (
+              {infoItems.map(({ icon: Icon, label, value }, i) => (
                 <div
                   key={label}
                   className={`flex items-start gap-5 border-border py-6 ${
                     i === 0 ? "pt-0" : ""
-                  } ${i < INFO_ITEMS.length - 1 ? "border-b" : ""}`}
+                  } ${i < infoItems.length - 1 ? "border-b" : ""}`}
                 >
                   <Icon
                     strokeWidth={1.5}
@@ -132,7 +133,7 @@ export function ContactScreen() {
                 viewport={{ once: true, margin: "-10%" }}
                 className="mt-4 flex gap-3"
               >
-                {SOCIAL_LINKS.map(({ label, href, icon }) => (
+                {socialLinks.map(({ label, href, icon }) => (
                   <motion.a
                     key={label}
                     variants={socialItem}
