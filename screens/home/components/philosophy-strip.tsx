@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 export function PhilosophyStrip() {
   return (
     <section>
-      <div className="mx-auto max-w-6xl px-6 pt-8 pb-4 text-center md:px-10 md:py-8">
+      <div className="mx-auto max-w-7xl px-4 pt-8 pb-4 text-center md:py-8">
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -41,8 +41,8 @@ export function PhilosophyStrip() {
               Một ánh nhìn, một nụ cười, một cái chạm rất khẽ.
             </span>
             <br />
-            Và khi khoảnh khắc ấy xuất hiện, chúng tôi giữ nó lại bằng ánh
-            sáng và những khung hình chân thật nhất.
+            Và khi khoảnh khắc ấy xuất hiện, chúng tôi giữ nó lại bằng ánh sáng
+            và những khung hình chân thật nhất.
           </p>
         </motion.blockquote>
 
@@ -59,12 +59,12 @@ export function PhilosophyStrip() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10%" }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mx-auto mt-8 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground"
+          className="mx-auto mt-8 max-w-2xl text-[0.95rem] leading-relaxed text-muted-foreground"
         >
           Hơn 12 năm kể chuyện bằng hình ảnh, chúng tôi đã gặp rất nhiều tình
-          yêu, mỗi tình yêu một nhịp điệu, một cảm xúc riêng. Với chúng tôi,
-          mỗi bộ ảnh, mỗi thước phim không phải là một công thức có sẵn — mà
-          là một câu chuyện được kể theo cách riêng của hai người.
+          yêu, mỗi tình yêu một nhịp điệu, một cảm xúc riêng. Với chúng tôi, mỗi
+          bộ ảnh, mỗi thước phim không phải là một công thức có sẵn — mà là một
+          câu chuyện được kể theo cách riêng của hai người.
         </motion.p>
       </div>
     </section>
