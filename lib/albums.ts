@@ -29,8 +29,18 @@ export type AlbumDetailData = {
 }
 
 const VI_MONTHS = [
-  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-  "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
 ]
 
 export function formatMonthYearVi(dateIso: string) {
@@ -44,7 +54,7 @@ export const CATEGORY_LABEL: Record<AlbumCategory, string> = {
 }
 
 export const CATEGORY_TITLE: Record<AlbumCategory, string> = {
-  pre_wedding: "Yêu, giữa thiên nhiên và ánh sáng",
+  pre_wedding: "Yêu, trong những khoảnh khắc thật nhất",
   wedding: "Một ngày, trọn một đời",
 }
 
@@ -59,7 +69,7 @@ export function buildAlbumCredits(location: string): AlbumCredit[] {
     { label: "Địa điểm", value: location },
     { label: "Chụp ảnh", value: "Remy's Studio" },
     { label: "Quay phim", value: "Remy's Films (highlight)" },
-    { label: "Trang điểm", value: "Mai Anh Makeup" },
+    { label: "Trang điểm", value: "Ma Huyền Makeup" },
   ]
 }
 
@@ -70,7 +80,9 @@ export function toAlbumCardData(album: AlbumRow): AlbumCardData {
     category: album.category,
     title: album.title,
     location: album.location ?? "",
-    coverImage: album.cover_image_key ? publicImageUrl(album.cover_image_key) : "",
+    coverImage: album.cover_image_key
+      ? publicImageUrl(album.cover_image_key)
+      : "",
   }
 }
 

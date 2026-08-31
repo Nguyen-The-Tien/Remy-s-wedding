@@ -35,10 +35,14 @@ export function PhilosophyStrip() {
           className="-mt-4"
         >
           <p className="font-serif text-[clamp(1.8rem,4vw,3.2rem)] leading-[1.25] text-foreground">
-            Chúng tôi không dựng lại cảm xúc —{" "}
-            <span className="italic">chúng tôi chờ nó xảy ra</span>, rồi giữ lại
-            đúng khoảnh khắc ấy bằng ánh sáng tự nhiên và một chiếc máy ảnh lặng
-            lẽ.
+            Chúng tôi không dựng lại cảm xúc — chỉ lặng lẽ chờ nó xảy đến.
+            <br />
+            <span className="italic">
+              Một ánh nhìn, một nụ cười, một cái chạm rất khẽ.
+            </span>
+            <br />
+            Và khi khoảnh khắc ấy xuất hiện, chúng tôi giữ nó lại bằng ánh
+            sáng và những khung hình chân thật nhất.
           </p>
         </motion.blockquote>
 
@@ -57,9 +61,10 @@ export function PhilosophyStrip() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mx-auto mt-8 max-w-xl text-[0.95rem] leading-relaxed text-muted-foreground"
         >
-          Hơn 6 năm theo chân các cặp đôi khắp Việt Nam, từ phố cổ Hội An đến
-          cao nguyên Sa Pa — mỗi bộ ảnh, mỗi đoạn film là một câu chuyện riêng,
-          không công thức, không sao chép.
+          Hơn 12 năm kể chuyện bằng hình ảnh, chúng tôi đã gặp rất nhiều tình
+          yêu, mỗi tình yêu một nhịp điệu, một cảm xúc riêng. Với chúng tôi,
+          mỗi bộ ảnh, mỗi thước phim không phải là một công thức có sẵn — mà
+          là một câu chuyện được kể theo cách riêng của hai người.
         </motion.p>
       </div>
     </section>

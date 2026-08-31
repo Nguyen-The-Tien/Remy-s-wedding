@@ -48,8 +48,8 @@ export function Hero({ heroData }: { heroData: HeroData }) {
   return (
     <section className="p-3 sm:p-5 md:p-8">
       <motion.div
-        initial={{ opacity: 0, scale: 1.02 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ scale: 1.02 }}
+        animate={{ scale: 1 }}
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-900 sm:aspect-[16/9] md:aspect-[21/9]"
       >
@@ -117,9 +117,9 @@ export function Hero({ heroData }: { heroData: HeroData }) {
             variants={item}
             className="hidden font-serif text-[clamp(1.8rem,4.6vw,3.4rem)] leading-[1.15] text-[var(--on-image)] italic sm:block"
           >
-            Kể chuyện tình
+            Những câu chuyện thật.
             <br />
-            bằng điện ảnh.
+            Những khung hình riêng.
           </motion.p>
           <motion.p
             variants={item}
