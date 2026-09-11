@@ -101,7 +101,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
     return (
       <div className="flex flex-col items-center gap-4 py-20 text-center">
         <p className="text-sm text-muted-foreground">Không tìm thấy album này.</p>
-        <Button variant="outline" nativeButton={false} render={<Link href="/admin/albums" />}>
+        <Button variant="outline" nativeButton={false} render={<Link href="/auth/admin/albums" />}>
           Quay lại danh sách
         </Button>
       </div>
@@ -193,7 +193,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
-            href="/admin/albums"
+            href="/auth/admin/albums"
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
@@ -223,7 +223,7 @@ export function AlbumDetailScreen({ albumId }: { albumId: string }) {
               deleteAlbum.mutate(albumId, {
                 onSuccess: () => {
                   toast.success("Đã xoá album")
-                  router.push("/admin/albums")
+                  router.push("/auth/admin/albums")
                 },
                 onError: () => {
                   setIsDeleted(false)

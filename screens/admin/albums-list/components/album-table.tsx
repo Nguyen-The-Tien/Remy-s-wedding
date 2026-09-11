@@ -68,7 +68,7 @@ function AlbumRowActions({ album }: { album: AlbumRow }) {
             variant="ghost"
             size="icon-sm"
             nativeButton={false}
-            render={<Link href={`/admin/albums/${album.id}`} />}
+            render={<Link href={`/auth/admin/albums/${album.id}`} />}
           >
             <Pencil />
             <span className="sr-only">Sửa</span>
@@ -135,7 +135,7 @@ export function AlbumTable({ albums }: { albums: AlbumRow[] }) {
               </TableCell>
               <TableCell>
                 <Link
-                  href={`/admin/albums/${album.id}`}
+                  href={`/auth/admin/albums/${album.id}`}
                   className="font-medium text-foreground hover:text-clay"
                 >
                   {album.title || "(Chưa đặt tên)"}

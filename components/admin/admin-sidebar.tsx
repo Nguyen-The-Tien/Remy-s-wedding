@@ -16,16 +16,16 @@ import { cn } from "@/lib/utils"
 import { signOut } from "@/lib/admin/auth"
 
 const NAV_ITEMS = [
-  { href: "/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
+  { href: "/auth/admin", label: "Tổng quan", icon: LayoutDashboard, exact: true },
   {
-    href: "/admin/albums",
+    href: "/auth/admin/albums",
     label: "Albums",
     icon: GalleryVerticalEnd,
     exact: false,
   },
-  { href: "/admin/videos", label: "Videos", icon: Film, exact: false },
-  { href: "/admin/settings", label: "Cài đặt", icon: Settings, exact: true },
-  { href: "/admin/account", label: "Tài khoản", icon: UserRound, exact: true },
+  { href: "/auth/admin/videos", label: "Videos", icon: Film, exact: false },
+  { href: "/auth/admin/settings", label: "Cài đặt", icon: Settings, exact: true },
+  { href: "/auth/admin/account", label: "Tài khoản", icon: UserRound, exact: true },
 ]
 
 export function AdminSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
@@ -34,14 +34,14 @@ export function AdminSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
   async function handleLogout() {
     await signOut()
-    router.push("/admin/login")
+    router.push("/auth/admin/login")
   }
 
   return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-5">
         <Link
-          href="/admin"
+          href="/auth/admin"
           onClick={onNavigate}
           className="font-serif text-xl tracking-wide text-foreground"
         >

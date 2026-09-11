@@ -28,7 +28,7 @@ export function LoginScreen() {
       setSubmitting(false)
       return
     }
-    router.push("/admin")
+    router.push("/auth/admin")
   }
 
   return (

@@ -62,7 +62,7 @@ export function NewAlbumDialog() {
           setTitle("")
           setLocation("")
           setEventDate(undefined)
-          router.push(`/admin/albums/${album.id}`)
+          router.push(`/auth/admin/albums/${album.id}`)
         },
         onError: () => toast.error("Không thể tạo album"),
       }

@@ -78,20 +78,20 @@ export function DashboardScreen() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Button nativeButton={false} render={<Link href="/admin/albums" />}>
+        <Button nativeButton={false} render={<Link href="/auth/admin/albums" />}>
           Quản lý albums
         </Button>
         <Button
           variant="outline"
           nativeButton={false}
-          render={<Link href="/admin/videos" />}
+          render={<Link href="/auth/admin/videos" />}
         >
           Quản lý videos
         </Button>
         <Button
           variant="outline"
           nativeButton={false}
-          render={<Link href="/admin/settings" />}
+          render={<Link href="/auth/admin/settings" />}
         >
           Cài đặt trang
         </Button>

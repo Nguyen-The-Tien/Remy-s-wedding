@@ -33,24 +33,24 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isPublicApiRoute = pathname === "/api/auth/login"
   const isApiRoute = pathname.startsWith("/api") && !isPublicApiRoute
-  const isAdminRoute = pathname.startsWith("/admin")
-  const isLoginRoute = pathname === "/admin/login"
+  const isAdminRoute = pathname.startsWith("/auth/admin")
+  const isLoginRoute = pathname === "/auth/admin/login"
 
   if (!user && isApiRoute) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   if (user && isLoginRoute) {
-    return NextResponse.redirect(new URL("/admin", request.url))
+    return NextResponse.redirect(new URL("/auth/admin", request.url))
   }
 
   if (!user && isAdminRoute && !isLoginRoute) {
-    return NextResponse.redirect(new URL("/admin/login", request.url))
+    return NextResponse.redirect(new URL("/auth/admin/login", request.url))
   }
 
   return response
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/:path*"],
+  matcher: ["/auth/admin/:path*", "/api/:path*"],
 }
