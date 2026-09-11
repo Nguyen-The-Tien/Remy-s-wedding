@@ -11,7 +11,8 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify:foundation": "tsx --conditions=react-server scripts/verify-foundation.ts"
+    "verify:foundation": "tsx --conditions=react-server scripts/verify-foundation.ts",
+    "generate:og-banner": "tsx scripts/generate-og-banner.tsx"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1112.0",
@@ -53,6 +54,7 @@
     "eslint-config-next": "16.2.6",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5",

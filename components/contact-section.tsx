@@ -58,7 +58,7 @@ export function ContactSection({ contact }: { contact: ContactInfo }) {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="mt-10 inline-flex h-11 items-center rounded-full bg-[var(--on-image)] px-8 text-sm font-medium tracking-wide text-neutral-950 transition-transform hover:-translate-y-0.5"
         >
-          Liên hệ Remy&rsquo;s
+          Liên hệ Remy
         </motion.div>
 
         <motion.p

@@ -45,7 +45,7 @@ export function AdminSidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className="font-serif text-xl tracking-wide text-foreground"
         >
-          Remy&rsquo;s<span className="text-clay">.</span>
+          Remy<span className="text-clay">.</span>
         </Link>
         <p className="mt-0.5 text-xs text-muted-foreground">Quản trị</p>
       </div>

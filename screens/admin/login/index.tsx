@@ -36,7 +36,7 @@ export function LoginScreen() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <span className="font-serif text-3xl tracking-wide text-foreground">
-            Remy&rsquo;s<span className="text-clay">.</span>
+            Remy<span className="text-clay">.</span>
           </span>
           <p className="mt-1 text-sm text-muted-foreground">Quản trị</p>
         </div>

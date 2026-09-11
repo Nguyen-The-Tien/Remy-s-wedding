@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 
+import { resizeImageFile } from "@/lib/image-resize"
 import { http } from "@/lib/queries/http"
 import { publicImageUrl } from "@/lib/r2-url"
 
@@ -17,12 +18,14 @@ type UploadResult = {
 }
 
 async function uploadFile({ file, kind, albumSlug }: UploadInput): Promise<UploadResult> {
+  const payload = kind === "hero-video" ? file : await resizeImageFile(file)
+
   const presignRes = await http.post<{ uploadUrl: string; key: string }>(
     "/uploads/presign",
     {
       kind,
-      fileName: file.name,
-      contentType: file.type,
+      fileName: payload.name,
+      contentType: payload.type,
       ...(kind === "album-photo" ? { albumSlug } : {}),
     }
   )
@@ -30,8 +33,8 @@ async function uploadFile({ file, kind, albumSlug }: UploadInput): Promise<Uploa
 
   await fetch(uploadUrl, {
     method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
+    headers: { "Content-Type": payload.type },
+    body: payload,
   })
 
   return { key, url: publicImageUrl(key) }

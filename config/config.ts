@@ -1,7 +1,8 @@
 export const APP_CONFIG = {
-  name: "Remy's",
+  name: "Remy",
   description:
     "Studio chụp ảnh và quay video pre-wedding, wedding — lưu giữ những khoảnh khắc bằng ánh sáng.",
+  siteUrl: "https://remystudio.vn",
 
   // Fallback contact info, used until site_settings is wired up to Supabase.
   contact: {

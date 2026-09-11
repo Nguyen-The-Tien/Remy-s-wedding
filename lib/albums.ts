@@ -67,8 +67,8 @@ export function albumHref(album: Pick<AlbumCardData, "category" | "slug">) {
 export function buildAlbumCredits(location: string): AlbumCredit[] {
   return [
     { label: "Địa điểm", value: location },
-    { label: "Chụp ảnh", value: "Remy's Studio" },
-    { label: "Quay phim", value: "Remy's Films (highlight)" },
+    { label: "Chụp ảnh", value: "Remy Studio" },
+    { label: "Quay phim", value: "Remy Films (highlight)" },
     { label: "Trang điểm", value: "Ma Huyền Makeup" },
   ]
 }

@@ -38,7 +38,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
           <span className="font-serif text-lg tracking-wide text-foreground">
-            Remy&rsquo;s<span className="text-clay">.</span> Quản trị
+            Remy<span className="text-clay">.</span> Quản trị
           </span>
         </header>
 

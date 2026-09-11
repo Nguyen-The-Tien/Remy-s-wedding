@@ -51,7 +51,7 @@ export function ContactScreen({ contact }: { contact: ContactInfo }) {
 
   return (
     <main>
-      <section className="relative bg-grain pt-10 pb-8 md:pt-12 md:pb-12">
+      <section className="bg-grain relative pt-10 pb-8 md:pt-12 md:pb-12">
         <div className="mx-auto max-w-[1440px] px-6 md:px-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -81,7 +81,7 @@ export function ContactScreen({ contact }: { contact: ContactInfo }) {
 
             <h1 className="-mt-3 max-w-2xl font-serif text-[clamp(2rem,4.6vw,3.2rem)] leading-[1.3] text-foreground">
               Ghé thăm studio, gọi điện, hay nhắn tin —{" "}
-              <span className="italic">Remy&rsquo;s luôn sẵn sàng lắng nghe</span>.
+              <span className="italic">Remy luôn sẵn sàng lắng nghe</span>.
             </h1>
 
             <div className="mt-8 h-px w-10 bg-border" />
@@ -169,7 +169,7 @@ export function ContactScreen({ contact }: { contact: ContactInfo }) {
               <div className="relative aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9]">
                 <iframe
                   src={mapSrc}
-                  title="Bản đồ studio Remy's"
+                  title="Bản đồ studio Remy"
                   className="absolute inset-0 h-full w-full [filter:grayscale(0.5)_contrast(1.1)_brightness(0.97)]"
                   style={{ border: 0 }}
                   loading="lazy"

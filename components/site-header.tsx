@@ -38,7 +38,7 @@ export function SiteHeader() {
           onClick={handleLogoClick}
           className="font-serif text-2xl tracking-wide text-foreground"
         >
-          Remy&rsquo;s<span className="text-clay">.</span>
+          Remy
         </Link>
 
         <nav className="hidden items-center gap-10 md:flex">
@@ -69,7 +69,7 @@ export function SiteHeader() {
           <SheetContent side="right" showCloseButton={false} className="p-0">
             <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-5 md:px-10">
               <span className="font-serif text-2xl tracking-wide text-foreground">
-                Remy&rsquo;s<span className="text-clay">.</span>
+                Remy
               </span>
               <SheetClose
                 render={

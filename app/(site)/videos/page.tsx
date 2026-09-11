@@ -4,12 +4,26 @@ import { VideoListScreen } from "@/screens/video-list"
 import { resolveContactInfo } from "@/lib/contact"
 import { getSiteSettings } from "@/lib/data/settings"
 import { getPublishedVideosPage } from "@/lib/data/videos"
+import { buildMetadata } from "@/lib/seo"
 
 const PAGE_SIZE = 8
+const TITLE = "Video cưới — Remy"
+const DESCRIPTION =
+  "Cảm xúc, dựng thành chuyển động — toàn bộ video cưới của Remy."
 
-export const metadata: Metadata = {
-  title: "Video cưới — Remy's",
-  description: "Cảm xúc, dựng thành chuyển động — toàn bộ video cưới của Remy's.",
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}): Promise<Metadata> {
+  const { page: pageParam } = await searchParams
+  const page = Math.max(1, Number(pageParam) || 1)
+
+  return buildMetadata({
+    title: TITLE,
+    description: DESCRIPTION,
+    path: page > 1 ? `/videos?page=${page}` : "/videos",
+  })
 }
 
 export default async function Page({

@@ -3,7 +3,11 @@ import "server-only"
 import { deleteObject } from "@/lib/r2"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createAnonClient } from "@/lib/supabase/anon"
-import type { AlbumCategory, AlbumPhotoRow, AlbumRow } from "@/lib/supabase/types"
+import type {
+  AlbumCategory,
+  AlbumPhotoRow,
+  AlbumRow,
+} from "@/lib/supabase/types"
 
 export type AlbumWithPhotos = AlbumRow & { photos: AlbumPhotoRow[] }
 
@@ -57,6 +61,20 @@ export async function getRecentFeaturedAlbums(limit = 8): Promise<AlbumRow[]> {
   return data
 }
 
+/** Minimal published-album listing for sitemap.xml generation. */
+export async function getAllPublishedAlbumsForSitemap(): Promise<
+  Pick<AlbumRow, "slug" | "category" | "updated_at">[]
+> {
+  const supabase = createAnonClient()
+  const { data, error } = await supabase
+    .from("albums")
+    .select("slug, category, updated_at")
+    .eq("is_published", true)
+    .order("updated_at", { ascending: false })
+  if (error) throw error
+  return data
+}
+
 export async function getPublishedAlbumBySlug(
   slug: string
 ): Promise<AlbumWithPhotos | null> {
@@ -83,7 +101,9 @@ export async function getPublishedAlbumBySlug(
 
 // --- Admin reads/writes (service-role client, bypasses RLS) ---
 
-export async function getAlbumByIdAdmin(id: string): Promise<AlbumWithPhotos | null> {
+export async function getAlbumByIdAdmin(
+  id: string
+): Promise<AlbumWithPhotos | null> {
   const supabase = createAdminClient()
 
   const { data: album, error } = await supabase
@@ -108,7 +128,9 @@ export async function getAlbumStatsAdmin(): Promise<
   { category: AlbumCategory; is_published: boolean }[]
 > {
   const supabase = createAdminClient()
-  const { data, error } = await supabase.from("albums").select("category, is_published")
+  const { data, error } = await supabase
+    .from("albums")
+    .select("category, is_published")
   if (error) throw error
   return data
 }
@@ -192,7 +214,10 @@ export async function updateAlbum(
     .single()
   if (error) throw error
 
-  if (previousCoverImageKey && previousCoverImageKey !== patch.cover_image_key) {
+  if (
+    previousCoverImageKey &&
+    previousCoverImageKey !== patch.cover_image_key
+  ) {
     await deleteObject(previousCoverImageKey).catch((err) =>
       console.error("R2 cleanup failed for", previousCoverImageKey, err)
     )
@@ -217,7 +242,10 @@ export async function deleteAlbum(id: string): Promise<void> {
     .maybeSingle()
   if (albumError) throw albumError
 
-  const { error: deleteError } = await supabase.from("albums").delete().eq("id", id)
+  const { error: deleteError } = await supabase
+    .from("albums")
+    .delete()
+    .eq("id", id)
   if (deleteError) throw deleteError
 
   const keys = [
@@ -227,7 +255,9 @@ export async function deleteAlbum(id: string): Promise<void> {
 
   await Promise.all(
     keys.map((key) =>
-      deleteObject(key).catch((err) => console.error("R2 cleanup failed for", key, err))
+      deleteObject(key).catch((err) =>
+        console.error("R2 cleanup failed for", key, err)
+      )
     )
   )
 }
